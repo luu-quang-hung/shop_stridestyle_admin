@@ -253,7 +253,6 @@ const ProductComponent = () => {
                 <td>{product.price}</td>
                 <td>{product.size}</td>
                 <td>{product.color}</td>
-
                 <td>{product.quantity}</td>
                 <td>{product.description}</td>
                 <td>
