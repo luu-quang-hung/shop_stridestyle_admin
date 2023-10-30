@@ -19,7 +19,6 @@ import {
 import { BsTrash, BsFillPencilFill } from "react-icons/bs";
 
 import { Table, Pagination, Button, Modal, Form } from 'react-bootstrap';
-import authService from 'src/views/service/auth.service';
 
 const ProductComponent = () => {
   const [products, setProducts] = useState([]);
@@ -226,7 +225,6 @@ const ProductComponent = () => {
         </CForm>
       </div>
       <div >
-
         <Table striped bordered hover responsive>
           <thead>
             <tr>
