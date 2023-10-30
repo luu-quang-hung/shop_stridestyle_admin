@@ -39,7 +39,6 @@ const ProductComponent = () => {
   });
 
 
-
   const [trademarks, setTrademark] = useState([]);
 
   useEffect(() => {
@@ -55,13 +54,7 @@ const ProductComponent = () => {
         console.error('Error fetching products:', err);
       })
   }
-  const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 5;
-  const indexOfLastProduct = currentPage * productsPerPage;
-  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
 
-  const totalPages = Math.ceil(products.length / productsPerPage);
 
   // Xử lý chuyển trang
   const handlePageChange = (pageNumber) => {
@@ -267,22 +260,9 @@ const ProductComponent = () => {
             ))}
           </tbody>
         </Table>
-        {/* Phân trang */}
-        <Pagination>
-          {Array.from({ length: totalPages }).map((_, index) => (
-            <Pagination.Item
-              key={index + 1}
-              active={index + 1 === currentPage}
-              onClick={() => handlePageChange(index + 1)}
-            >
-              {index + 1}
-            </Pagination.Item>
-          ))}
-        </Pagination>
 
 
-        {/* Modal xác nhận xóa sản phẩm */}
-        <Modal show={showModal} onHide={cancelDeleteProduct}>
+        {/* <Modal show={showModal} onHide={cancelDeleteProduct}>
           <Modal.Header closeButton>
             <Modal.Title>Xác nhận xóa sản phẩm</Modal.Title>
           </Modal.Header>
@@ -298,7 +278,6 @@ const ProductComponent = () => {
         </Modal>
 
 
-        {/* Modal cập nhật sản phẩm */}
         <Modal show={showUpdateModal} onHide={cancelUpdateProduct}>
           <Modal.Header closeButton>
             <Modal.Title>Cập nhật sản phẩm</Modal.Title>
@@ -389,7 +368,6 @@ const ProductComponent = () => {
           </Modal.Footer>
         </Modal>
 
-        {/* Modal thêm mới sản phẩm */}
         <Modal show={showAddModal} onHide={cancelAddProduct}>
           <Modal.Header closeButton>
             <Modal.Title>Thêm mới sản phẩm</Modal.Title>
@@ -488,7 +466,7 @@ const ProductComponent = () => {
               Thêm mới
             </Button>
           </Modal.Footer>
-        </Modal>
+        </Modal> */}
       </div>
     </div>
   )
