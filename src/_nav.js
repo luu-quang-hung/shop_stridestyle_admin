@@ -7,7 +7,8 @@ import {
   cilClipboard,
   cilAddressBook,
   cilCart,
-  cilPaw
+  cilPaw,
+  cibEleventy
 } from '@coreui/icons';import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 import "./scss/_nav.scss"
 const _nav = [
@@ -39,6 +40,18 @@ const _nav = [
     name: 'Trademark',
     to: '/management/trademark',
     icon: <CIcon icon={cilPaw} customClassName="nav-icon" ></CIcon>
+  },
+  {
+    component: CNavItem,
+    name: 'Property',
+    to: '/management/property',
+    icon: <CIcon icon={cilDrop} customClassName="nav-icon" ></CIcon>
+  },
+  {
+    component: CNavItem,
+    name: 'Event',
+    to: '/management/event',
+    icon: <CIcon icon={cibEleventy} customClassName="nav-icon" ></CIcon>
   },
   {
     component: CNavItem,
