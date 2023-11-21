@@ -21,9 +21,11 @@ import {
 import { BsTrash, BsFillPencilFill, BsFillEyeFill } from "react-icons/bs";
 import PaginationCustom from 'src/views/pagination/PaginationCustom';
 import { Table, Pagination, Button, Modal, Form } from 'react-bootstrap';
+import PropertyService from 'src/views/service/property-service';
+import propertyService from 'src/views/service/property-service';
 
 const ProductComponent = () => {
-  const [products, setProducts] = useState([]);
+  const [productCreate, setProductCreate] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [productIdToDelete, setProductIdToDelete] = useState(null);
@@ -42,6 +44,9 @@ const ProductComponent = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const [trademarks, setTrademark] = useState([]);
+  const [size, setSize] = useState([]);
+  const [property, setProperty] = useState([]);
+
   useEffect(() => {
     getProductList();
   }, [productSearch]);
@@ -149,13 +154,66 @@ const ProductComponent = () => {
 
 
   //thêm mới trong modal
+
+
+  
+
+  // Hủy thêm mới sản phẩm
+  const cancelAddProduct = () => {
+    setShowAddModal(false);
+  };
+
+
+  const deleteProduct = (idProduct) =>{
+    productService.deleteProduct(idProduct)
+    .then(res => {
+      alert(res.data.edesc)
+      getProductList()
+    })
+    .catch(error => {
+      console.log("Error load delete", error);
+    })
+  }
+
+  const getTradeMarkList = () => {
+    const jsonPage = {
+      page: 0,
+      size: 1000
+    }
+    productService.findCategory()
+      .then(res => {
+        setTrademark(res.data)
+      })
+      .catch(error => {
+        console.log("Error load data Trademark", error);
+      })
+
+    propertyService.findAllSize(jsonPage)
+      .then(res => {
+        console.log(res.data.content);
+        setSize(res.data.content)
+      })
+      .catch(error => {
+        console.log("Error load data Trademark", error);
+      })
+      propertyService.findAllProperty(jsonPage)
+      .then(res => {
+        console.log(res.data.content);
+        setProperty(res.data.content)
+
+      })
+      .catch(error => {
+        console.log("Error load data Trademark", error);
+      })
+  }
+
   const handleChange = (event) => {
     const { name, value, type } = event.target;
 
     if (type === 'file') {
-      setProductInfo((prevInfo) => ({ ...prevInfo, [name]: event.target.files[0] }));
+      setProductCreate((prevInfo) => ({ ...prevInfo, [name]: event.target.files[0] }));
     } else {
-      setProductInfo((prevInfo) => ({ ...prevInfo, [name]: value }));
+      setProductCreate((prevInfo) => ({ ...prevInfo, [name]: value }));
     }
   };
 
@@ -169,73 +227,37 @@ const ProductComponent = () => {
     formData.append('color', productInfo.color);
     formData.append('file', productInfo.image);
     formData.append('quantity', productInfo.quantity);
-    // Reset the form after submission if needed
 
     try {
-      // Send formData to the API using axios.post
-      const response = UserService.createProduct(formData);
-      console.log(response.data); // Log the response from the API if needed
 
-      // Reset the form after successful submission
-      setProductInfo({
-        trademark: '',
-        name: '',
-        description: '',
-        price: '',
-        size: '',
-        color: '',
-        image: null,
-        quantity: '',
-      });
-      setShowAddModal(false);
-      alert("Thêm mới thành công")
-      getProductList();
 
-      // Call the confirmAddProduct function or perform any other actions after successful submission
     } catch (error) {
       console.error('Error while adding product:', error);
       // Handle errors if needed
     }
 
   };
-
-  // Hủy thêm mới sản phẩm
-  const cancelAddProduct = () => {
-    setShowAddModal(false);
-  };
-
-  //list category
-  const getTradeMarkList = () => {
-    UserService.getTradeMark()
-      .then(res => {
-        setTrademark(res.data.data)
-
-      })
-      .catch(error => {
-        console.log("Error load data Trademark", error);
-      })
-  }
   return (
     <div class="container">
       <CCard>
         <CCardBody>
-        <CForm class="row g-3">
-        <CCol xs="auto">
-          <CFormLabel htmlFor="staticEmail2" >
-            <Button variant="outline-primary" className="btn-loading" onClick={handleAddProduct}>
-              Create
-            </Button>
-          </CFormLabel>
-        </CCol>
-        <CCol xs="auto">
-          <CFormInput type="text" id="nameProduct" placeholder="Product Name" />
-        </CCol>
-        <CCol xs="auto">
-          <CButton type="submit" className="mb-3">
-            Search
-          </CButton>
-        </CCol>
-      </CForm>
+          <CForm class="row g-3">
+            <CCol xs="auto">
+              <CFormLabel htmlFor="staticEmail2" >
+                <Button variant="outline-primary" className="btn-loading" onClick={handleAddProduct}>
+                  Create
+                </Button>
+              </CFormLabel>
+            </CCol>
+            <CCol xs="auto">
+              <CFormInput type="text" id="nameProduct" placeholder="Product Name" />
+            </CCol>
+            <CCol xs="auto">
+              <CButton type="submit" className="mb-3">
+                Search
+              </CButton>
+            </CCol>
+          </CForm>
           <div >
             <CTable striped bordered hover responsive>
               <thead>
@@ -267,14 +289,13 @@ const ProductComponent = () => {
                     <td>{product.date_create}</td>
                     <td>{product.date_update}</td>
                     <td>{product.description}</td>
-
                     <td>
                       <CRow>
                         <CCol md={4}>
                           <BsFillPencilFill onClick={() => handleUpdateProduct(product)}></BsFillPencilFill>
                         </CCol>
                         <CCol md={4}>
-                          <BsTrash ></BsTrash>
+                          <BsTrash onClick={() => deleteProduct(product.id)}></BsTrash>
                         </CCol>
                         <CCol md={4}>
                           <BsFillEyeFill onClick={() => showProductDetail(product.id)}></BsFillEyeFill>
@@ -293,8 +314,6 @@ const ProductComponent = () => {
               total={totalPages}
               onChange={handlePageChange}
             />
-
-
             <Modal show={showModal} onHide={cancelShowProductDetail} centered>
               <Modal.Header closeButton>
                 <Modal.Title>Product Detail</Modal.Title>
@@ -419,106 +438,153 @@ const ProductComponent = () => {
             </Button>
           </Modal.Footer>
         </Modal>
+*/}
+            <Modal show={showAddModal} onHide={cancelAddProduct}
+              size="lg"
+              aria-labelledby="contained-modal-title-vcenter"
+              centered
+            >
+              <Modal.Header closeButton>
+                <Modal.Title>Thêm mới sản phẩm</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <Form>
+                  <CRow>
+                    <CCol md={6}>
+                      <Form.Group controlId="formName">
+                        <Form.Label>Name</Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="name"
+                          value={productCreate.name}
+                          onChange={handleChange}
+                          placeholder="Enter name" />
+                      </Form.Group>
+                    </CCol>
+                    <CCol>
+                      <Form.Group controlId="formPrice">
+                        <Form.Label>Price</Form.Label>
+                        <Form.Control
+                          type="text"
+                          placeholder="Enter price"
+                          name="price"
+                          value={productCreate.price}
+                          onChange={handleChange}
+                        />
+                      </Form.Group>
+                    </CCol>
+                    <CCol md={6}>
+                      <Form.Label>Size</Form.Label>
+                      <Form.Control
+                        as="select"
+                        name="size"
+                        value={productCreate.size}
+                        onChange={handleChange}
+                      >
+                        <option value="">Select a size</option>
+                        {size.map((item) => (
+                          <option key={item.id} value={item.id}>
+                            {item.name}
+                          </option>
+                        ))}
+                      </Form.Control>
 
-        <Modal show={showAddModal} onHide={cancelAddProduct}>
-          <Modal.Header closeButton>
-            <Modal.Title>Thêm mới sản phẩm</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form>
-              <Form.Group controlId="formTrademark">
-                <Form.Label>Trademark</Form.Label>
-                <Form.Control
-                  as="select"
-                  name="trademark"
-                  value={productInfo.trademark}
-                  onChange={handleChange}
-                >
-                  <option value="">Select a trademark</option>
-                  {trademarks.map((item) => (
-                    <option key={item.idTrademark} value={item.idTrademark}>
-                      {item.nameTrademark}
-                    </option>
-                  ))}
-                </Form.Control>
-              </Form.Group>
-              <Form.Group controlId="formName">
-                <Form.Label>Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="name"
-                  value={productInfo.name}
-                  onChange={handleChange}
-                  placeholder="Enter name"
-                />              </Form.Group>
-              <Form.Group controlId="formDescription">
-                <Form.Label>Description</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  placeholder="Enter description"
-                  name="description"
-                  value={productInfo.description}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-              <Form.Group controlId="formPrice">
-                <Form.Label>Price</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Enter price"
-                  name="price"
-                  value={productInfo.price}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-              <Form.Group controlId="formSize">
-                <Form.Label>Size</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Enter size"
-                  name="size"
-                  value={productInfo.size}
-                  onChange={handleChange} />
-              </Form.Group>
-              <Form.Group controlId="formColor">
-                <Form.Label>Color</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Enter color"
-                  name="color"
-                  value={productInfo.color}
-                  onChange={handleChange} />
-              </Form.Group>
-              <Form.Group controlId="formImage">
-                <Form.Label>Image</Form.Label>
-                <Form.Control
-                  type="file"
-                  placeholder="Chose image"
-                  name="image"
-                  onChange={handleChange} />
-              </Form.Group>
-              <Form.Group controlId="formQuantity">
-                <Form.Label>Quantity</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Enter quantity"
-                  name="quantity"
-                  value={productInfo.quantity}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </Form>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={cancelAddProduct}>
-              Hủy
-            </Button>
-            <Button variant="primary" onClick={handleSubmit}>
-              Thêm mới
-            </Button>
-          </Modal.Footer>
-        </Modal> */}
+                    </CCol>
+                    <CCol md={6}>
+                      <Form.Label>Color</Form.Label>
+                      <Form.Control
+                        as="select"
+                        name="color"
+                        value={productCreate.color}
+                        onChange={handleChange}
+                      >
+                        <option value="">Select a color</option>
+                        {property.map((item) => (
+                          <option key={item.idProperty} value={item.idProperty}>
+                            {item.name}
+                          </option>
+                        ))}
+                      </Form.Control>
+                    </CCol>
+                    <CCol md={6}>
+                      <Form.Group controlId="formTrademark">
+                        <Form.Label>Trademark</Form.Label>
+                        <Form.Control
+                          as="select"
+                          name="trademark"
+                          value={productCreate.trademark}
+                          onChange={handleChange}
+                        >
+                          <option value="">Select a trademark</option>
+                          {trademarks.map((item) => (
+                            <option key={item.id} value={item.id}>
+                              {item.nameCategory}
+                            </option>
+                          ))}
+                        </Form.Control>
+                      </Form.Group>
+                    </CCol>
+                    <CCol md={6}>
+                      <Form.Group controlId="formQuantity">
+                        <Form.Label>Quantity</Form.Label>
+                        <Form.Control
+                          type="text"
+                          placeholder="Enter quantity"
+                          name="quantity"
+                          value={productCreate.quantity}
+                          onChange={handleChange}
+                        />
+                      </Form.Group>
+                    </CCol>
+                    <Form.Group controlId="formImage">
+                      <Form.Label>Image</Form.Label>
+                      <Form.Control
+                        type="file"
+                        placeholder="Chose image"
+                        name="image"
+                        onChange={handleChange} />
+                    </Form.Group>
+                    <Form.Group controlId="formDescription">
+                      <Form.Label>Description</Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        rows={3}
+                        placeholder="Enter description"
+                        name="description"
+                        value={productCreate.description}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                    <Form.Group controlId="formDescription">
+                      <Form.Label>Description_detail</Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        rows={3}
+                        placeholder="Enter description detail"
+                        name="descriptionDetail"
+                        value={productCreate.descriptionDetail}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </CRow>
+
+
+
+
+
+
+
+                </Form>
+              </Modal.Body>
+              <Modal.Footer>
+                <Button variant="secondary" onClick={cancelAddProduct}>
+                  Hủy
+                </Button>
+                <Button variant="primary" onClick={handleSubmit}>
+                  Thêm mới
+                </Button>
+              </Modal.Footer>
+            </Modal>
           </div>
         </CCardBody>
       </CCard>

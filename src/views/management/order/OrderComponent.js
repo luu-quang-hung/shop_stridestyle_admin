@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import UserService from 'src/views/service/user.service';
 import {
   CButton,
   CCard,
@@ -15,59 +14,46 @@ import {
   CFormLabel,
   CTable
 } from '@coreui/react'
-import { BsTrash, BsFillPencilFill,BsTicketDetailed } from "react-icons/bs";
-
+import { BsTrash, BsFillPencilFill, BsTicketDetailed } from "react-icons/bs";
+import billService from 'src/views/service/bill-service';
 import { Table, Pagination, Button, Modal, Form } from 'react-bootstrap';
 
-const OrderComponent = () =>{
+const OrderComponent = () => {
 
-    const [order, setOrder] = useState([]);
-    const [orderDetail,setOrderDetail] = useState([]);
-    const [showModalOrderDetail,setShowModalOrderDetail] = useState(false)
-    useEffect(() => {
-      getOrderList();
-    }, []);
-
-    const getOrderList = () => {
-      UserService.getOrderList()
-        .then(res => {
-          setOrder(res.data.data);
-        })
-        .catch(err => {
-          console.error('Error fetching order:', err);
-        })
+  const [searchBill, setSearchBill] = useState(
+    {
+      dateTo: null,
+      email: null,
+      page: 0,
+      phone: null,
+      size: 10,
+      startDate: null,
+      statusShipping: null
     }
+  );
+  const [listBill, setListBill] = useState([]);
+  const [showModalOrderDetail, setShowModalOrderDetail] = useState(false)
+  useEffect(() => {
+    getOrderList();
+  }, []);
+
+  const getOrderList = () => {
+    billService.findAllBill(searchBill)
+      .then(res => {
+        setListBill(res.data.data)
+      })
+      .catch(err => {
+        console.error('Error fetching order:', err);
+      })
+  }
 
 
-    const [currentPage, setCurrentPage] = useState(1);
-    const orderPerPage = 7;
-    const indexOfLastProduct = currentPage * orderPerPage;
-    const indexOfFirstProduct = indexOfLastProduct - orderPerPage;
-    const currentOrder = order.slice(indexOfFirstProduct, indexOfLastProduct);
-
-    const totalPages = Math.ceil(order.length / orderPerPage);
-
-    // Xử lý chuyển trang
-    const handlePageChange = (pageNumber) => {
-      setCurrentPage(pageNumber);
-    };
-
-    const handleOrderDetail = (orderDetail) =>{
-      setOrderDetail(orderDetail);
-      console.log(orderDetail)
-      setShowModalOrderDetail(true)
-    }
-
-    const cancelOrderDetail = ()=>{
-      setShowModalOrderDetail(false);
-    }
-
-    return(
+  return (
     <div class="container">
- <div class="nav">
+      <div class="nav">
         <CForm class="row g-3">
           <CCol xs="auto">
-          <CFormInput type="text" id="nameProduct" placeholder="NumberPhone or Email" />
+            <CFormInput type="text" id="nameProduct" placeholder="NumberPhone or Email" />
           </CCol>
           <CCol xs="auto">
           </CCol>
@@ -87,38 +73,42 @@ const OrderComponent = () =>{
         </CForm>
       </div>
       <div class="table">
-      <Table striped bordered hover responsive>
+        <Table striped bordered hover responsive>
           <thead>
             <tr>
-              <th>Id</th>
-              <th>Phone number</th>
+              <th>STT</th>
+              <th>Trạng thái đơn hàng</th>
+              <th>Số điện thoại</th>
               <th>Email</th>
-              <th>Address</th>
-              <th>Payment Method</th>
-              <th>Order Date</th>
-              <th>Total Quantity</th>
-              <th>Total Amount</th>
-              <th>Zip Code</th>
-              <th>Name Customer</th>
-              <th>Detail</th>
-              <th>Update</th>
-              <th>Delete</th>
+              <th>Địa chỉ</th>
+              <th>Họ Và Tên</th>
+              <th>Phương thức thanh toán</th>
+              <th>Ngày đặt hàng</th>
+              <th>Số tiền</th>
+              <th>Giá giảm</th>
+              <th>Tổng tiền</th>
+              <th>Ghi chú</th>
+              <th>Chi tiết</th>
+              <th>Cập nhật</th>
+              <th>Xóa</th>
             </tr>
           </thead>
-
           <tbody>
-            {currentOrder.map((orders) => (
-              <tr key={orders.id}>
-                <td>{orders.id}</td>
-                <td>{orders.phoneNumber}</td>
-                <td>{orders.email}</td>
+            {listBill.map((orders,index) => (
+              <tr key={index}>
+                <td>{index + 1}</td>
+                <td>{orders.statusShipping}</td>
+                <td>{orders.sdt}</td>
+                <td>{orders.customerEntity.email || ""}</td>
                 <td>{orders.address}</td>
-                <td>{orders.paymentMethod}</td>
-                <td>{orders.orderDate}</td>
-                <td>{orders.orderDetailId.sumQuantity}</td>
-                <td>{orders.totalAmount}</td>
-                <td>{orders.zipCode}</td>
-                <td>{orders.customer.nameCustomer}</td>
+                <td>{orders.fullName}</td>
+                <td>{orders.payment}</td>
+                <td>{orders.createAt}</td>
+                <td>{orders.total}</td>
+                <td>{orders.discount || "Không giảm"}</td>
+                <td>{orders.downTotal}</td>
+                <td>{orders.note}</td>
+                
                 <td>
                   <Button variant="primary" onClick={() => handleOrderDetail(orders.orderDetailId.productOrderId)} >
                     <BsTicketDetailed></BsTicketDetailed>
@@ -137,66 +127,14 @@ const OrderComponent = () =>{
               </tr>
             ))}
           </tbody>
-          </Table>
-            {/* Phân trang */}
-        <Pagination>
-          {Array.from({ length: totalPages }).map((_, index) => (
-            <Pagination.Item
-              key={index + 1}
-              active={index + 1 === currentPage}
-              onClick={() => handlePageChange(index + 1)}
-            >
-              {index + 1}
-            </Pagination.Item>
-          ))}
-        </Pagination>
+        </Table>
+        {/* Phân trang */}
+
       </div>
 
 
-      <Modal show={showModalOrderDetail} onHide={cancelOrderDetail}>
-          <Modal.Header closeButton>
-            <Modal.Title>Cập nhật sản phẩm</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-          <Table striped bordered hover responsive>
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Sum Quantity</th>
-      <th>Name</th>
-      <th>Price</th>
-    </tr>
-  </thead>
-  <tbody>
-    {orderDetail.map((order) => (
-      <tr key={order.id}>
-        <td>{order.id}</td>
-        <td>{order.quantity}</td>
-        {order.productId.length > 0 ? (
-          <>
-            <td>{order.productId[0].name}</td>
-            <td>{order.productId[0].price}</td>
-          </>
-        ) : (
-          <>
-            <td>Khong co sp</td>
-            <td>Khong co sp</td>
-          </>
-        )}
-      </tr>
-    ))}
-  </tbody>
-</Table>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={cancelOrderDetail}>
-              Hủy
-            </Button>
-          </Modal.Footer>
-        </Modal>
-
     </div>
-    )
+  )
 }
 
 export default OrderComponent;
