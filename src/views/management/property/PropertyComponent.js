@@ -15,10 +15,7 @@ import {
   CTable,
   CContainer
 } from '@coreui/react'
-import { BsTrash, BsFillPencilFill } from "react-icons/bs";
-import { Container, FormControl, InputGroup } from 'react-bootstrap';
-import categoryService from 'src/views/service/category-service';
-import { Table, Pagination, Button, Modal, Form } from 'react-bootstrap';
+import { BsTrash, BsFillPencilFill } from "react-icons/bs";;
 import PaginationCustom from 'src/views/pagination/PaginationCustom';
 import propertyService from 'src/views/service/property-service';
 

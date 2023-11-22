@@ -9,6 +9,9 @@ class BillService {
     return axios.post(API_URL + 'find-by-date-phone-email-status', json, { headers: authHeader() });
   }
 
+  findByIdBill(idBill) {
+    return axios.get(API_URL + `find-by-id_bill/` + idBill, { headers: authHeader() })
+  }
 }
 
 export default new BillService();
