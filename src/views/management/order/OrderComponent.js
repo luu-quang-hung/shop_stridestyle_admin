@@ -33,6 +33,8 @@ const OrderComponent = () => {
   );
   const [listBill, setListBill] = useState([]);
   const [showModalOrderDetail, setShowModalOrderDetail] = useState(false)
+  const [showModal, setShowModal] = useState(false);
+
   useEffect(() => {
     getOrderList();
   }, []);
@@ -47,27 +49,37 @@ const OrderComponent = () => {
       })
   }
 
+  const cancelShowModal = () => {
+    setShowModal(false);
+  };
+
+  const handleModal = (product) => {
+    setShowModal(true);
+  };
 
   return (
     <div class="container">
       <div class="nav">
         <CForm class="row g-3">
           <CCol xs="auto">
-            <CFormInput type="text" id="nameProduct" placeholder="NumberPhone or Email" />
+            <CFormInput type="text" id="nameProduct" placeholder="Số điện thoại" />
           </CCol>
           <CCol xs="auto">
           </CCol>
           <CCol xs="auto">
-            <CFormInput type="text" id="nameProduct" placeholder="Date" />
+            <CFormInput type="text" id="nameProduct" placeholder="Khoảng ngày" />
           </CCol>
           <CCol xs="auto">
           </CCol>
           <CCol xs="auto">
-            <CFormInput type="text" id="nameProduct" placeholder="Name customer" />
+            <CFormInput type="text" id="nameProduct" placeholder="Tên khách hàng" />
+          </CCol>
+          <CCol xs="auto">
+            <CFormInput type="text" id="nameProduct" placeholder="Trạng thái " />
           </CCol>
           <CCol xs="auto">
             <CButton type="submit" className="mb-3">
-              Search
+              Tìm Kiếm
             </CButton>
           </CCol>
         </CForm>
@@ -95,7 +107,7 @@ const OrderComponent = () => {
           </thead>
           <tbody>
             {listBill.map((orders,index) => (
-              <tr key={index}>
+              <tr key={index} onClick={() => handleModal(orders.id)}>
                 <td>{index + 1}</td>
                 <td>{orders.statusShipping}</td>
                 <td>{orders.sdt}</td>
@@ -108,9 +120,8 @@ const OrderComponent = () => {
                 <td>{orders.discount || "Không giảm"}</td>
                 <td>{orders.downTotal}</td>
                 <td>{orders.note}</td>
-                
                 <td>
-                  <Button variant="primary" onClick={() => handleOrderDetail(orders.orderDetailId.productOrderId)} >
+                  <Button variant="primary" >
                     <BsTicketDetailed></BsTicketDetailed>
                   </Button>
                 </td>
@@ -133,6 +144,29 @@ const OrderComponent = () => {
       </div>
 
 
+      <Modal show={showModal} onHide={cancelShowModal} centered>
+              <Modal.Header closeButton>
+                <Modal.Title>Order Detail</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <Table striped bordered hover responsive>
+                  <thead>
+                    <tr style={{ textAlign: "center" }}>
+                      <th>STT</th>
+                      <th>Tên sản phẩm</th>
+                      <th>Số lượng sản phẩm</th>
+                      <th>Đơn giá</th>
+                      <th>Ảnh</th>
+                    </tr>
+                  </thead>
+                </Table>
+              </Modal.Body>
+              <Modal.Footer>
+                <Button variant="secondary" onClick={cancelShowModal}>
+                  Hủy
+                </Button>
+              </Modal.Footer>
+            </Modal>
     </div>
   )
 }
