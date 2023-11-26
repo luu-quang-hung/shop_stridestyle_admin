@@ -12,6 +12,11 @@ class BillService {
   findByIdBill(idBill) {
     return axios.get(API_URL + `find-by-id_bill/` + idBill, { headers: authHeader() })
   }
+
+  updateBill(json){
+    return axios.post(API_URL + `confirm-bill-manager`,json, { headers: authHeader() })
+
+  }
 }
 
 export default new BillService();
