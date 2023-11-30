@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import productService from 'src/views/service/product-service';
 import {
   CButton,
@@ -21,11 +21,30 @@ import {
 import { BsTrash, BsFillPencilFill, BsFillEyeFill } from "react-icons/bs";
 import PaginationCustom from 'src/views/pagination/PaginationCustom';
 import { Table, Pagination, Button, Modal, Form } from 'react-bootstrap';
-import PropertyService from 'src/views/service/property-service';
 import propertyService from 'src/views/service/property-service';
+import { confirmAlert } from "react-confirm-alert"; // Import
+import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import "../../css/product.css"
+import CurrencyFormatter from 'src/common/CurrencyFormatter';
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 
 const ProductComponent = () => {
-  const [productCreate, setProductCreate] = useState([]);
+  const format = new CurrencyFormatter();
+  const [productCreate, setProductCreate] = useState({
+    nameProduct: '',
+    price: '',
+    idSize: '',
+    idProperties: '',
+    idCategory: '',
+    quantity: '',
+    image: null, // Assuming image is a file, initializing it with null
+    description: '',
+    descriptionDetail: '',
+  });
   const [showModal, setShowModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [productIdToDelete, setProductIdToDelete] = useState(null);
@@ -35,7 +54,9 @@ const ProductComponent = () => {
 
   const [productSearch, setProductSearch] = useState({
     page: 0,
-    size: 10
+    size: 10,
+    nameProduct: null,
+    categoryName: null
   });
   const [productDetail, setProductDetail] = useState([])
 
@@ -46,10 +67,12 @@ const ProductComponent = () => {
   const [trademarks, setTrademark] = useState([]);
   const [size, setSize] = useState([]);
   const [property, setProperty] = useState([]);
+  const [listImages, setListImages] = useState([]);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     getProductList();
-  }, [productSearch]);
+  }, [productSearch.page]);
 
   const getProductList = () => {
     productService.findAllProduct(productSearch)
@@ -68,112 +91,97 @@ const ProductComponent = () => {
   };
 
   const showProductDetail = (idProduct) => {
-    productService.findByIdProduct(idProduct)
+    const json = {
+      productId: idProduct,
+      page: 0,
+      size: 1000
+    }
+    productService.findListProductDetail(json)
       .then(res => {
-        setProductDetail(res.data.data[0].productDetailEntities);
-        console.log(res.data.data);
+        setProductDetail(res.data.data.content)
+        console.log(res.data.data.content);
       })
       .catch(err => {
         console.error('Error fetching products:', err);
       })
     setShowModal(true)
-    console.log(idProduct);
-
   }
+
+  const [currentPageDetail, setCurrentPageDetail] = useState(1);
+  const itemsPerPage = 10;
+
+  const indexOfLastItemDetail = currentPageDetail * itemsPerPage;
+  const indexOfFirstItemDetail = indexOfLastItemDetail - itemsPerPage;
+  const currentItemsDetail = productDetail.slice(indexOfFirstItemDetail, indexOfLastItemDetail);
+
+  const totalPagesDetail = Math.ceil(productDetail.length / itemsPerPage);
+
+  const handlePageChangeDetail = (pageNumber) => {
+    setCurrentPageDetail(pageNumber);
+  };
 
   const cancelShowProductDetail = () => {
     setShowModal(false);
   };
 
-  // Xử lý xóa sản phẩm
-  // const handleDeleteProduct = (id) => {
-  //   setProductIdToDelete(id);
-  //   setShowModal(true);
-  // };
 
-  // //Xác nhận xóa sản phẩm
-  // const confirmDeleteProduct = () => {
-  //   UserService.deleteProduct(productIdToDelete)
-  //     .then(() => {
-  //       // Product deleted successfully, reload the page to reflect the changes
-  //       getProductList();
-  //       setShowModal(false);
-  //     })
-  //     .catch((error) => {
-  //       console.error('Error while deleting product:', error);
-  //       // Handle errors if needed
-  //       setShowModal(false);
-  //     });
+  const handleInputChange = (field, value) => {
+    const nullValue = value === 'null' ? null : value;
+    setProductSearch((prevSearchBill) => ({
+      ...prevSearchBill,
+      [field]: nullValue,
+    }));
+  };
 
-  // };
+  const backPage = (idProduct, nameProduct) => {
+    if (idProduct) {
+      confirmAlert({
+        message:
+          `Bạn có chắc chắn muốn xóa sản phẩm ` + nameProduct + ` không ?`,
+        buttons: [
+          {
+            label: "Trở lại",
+            className: "stayPage",
+          },
+          {
+            label: "Xác nhận",
+            onClick: () => deleteProduct(idProduct),
+            className: "leavePage",
+          },
+        ],
+      });
+    }
+  };
 
-  // // Hủy xóa sản phẩm
-  // const cancelDeleteProduct = () => {
-  //   setShowModal(false);
-  // };
+  const deleteProduct = (idProduct) => {
+    productService.deleteProduct(idProduct)
+      .then(res => {
+        toast.success("Xóa sản phẩm thành công", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        getProductList()
+      })
+      .catch(error => {
+        console.log("Error load delete", error);
+      })
+  }
 
-
-  // Xử lý cập nhật sản phẩm
   const handleUpdateProduct = (product) => {
     setProductToUpdate(product);
     setShowUpdateModal(true);
   };
 
-  const handleChangeUpdate = (event) => {
-    const { name, value } = event.target;
-    setProductToUpdate((prevInfo) => ({ ...prevInfo, [name]: value }));
-  }
 
-  // Xác nhận cập nhật sản phẩm
-  const confirmUpdateProduct = () => {
-    console.log(productToUpdate);
-    UserService.updateProduct(productToUpdate)
-      .then(res => {
-        console.log(res);
-        getProductList();
-        setShowUpdateModal(false);
-      })
-      .catch((error) => {
-        console.error('Error while update product:', error);
-        // Handle errors if needed
-        setShowUpdateModal(false);
-      });
-  };
-
-  // Hủy cập nhật sản phẩm
-  const cancelUpdateProduct = () => {
-    setShowUpdateModal(false);
-  };
-
-
-  // Xử lý hiển thị Modal thêm mới
   const handleAddProduct = () => {
     getTradeMarkList();
     setShowAddModal(true);
   };
 
-
-  //thêm mới trong modal
-
-
-  
-
-  // Hủy thêm mới sản phẩm
   const cancelAddProduct = () => {
+    resetForm();
     setShowAddModal(false);
   };
-
-
-  const deleteProduct = (idProduct) =>{
-    productService.deleteProduct(idProduct)
-    .then(res => {
-      alert(res.data.edesc)
-      getProductList()
-    })
-    .catch(error => {
-      console.log("Error load delete", error);
-    })
-  }
 
   const getTradeMarkList = () => {
     const jsonPage = {
@@ -196,7 +204,7 @@ const ProductComponent = () => {
       .catch(error => {
         console.log("Error load data Trademark", error);
       })
-      propertyService.findAllProperty(jsonPage)
+    propertyService.findAllProperty(jsonPage)
       .then(res => {
         console.log(res.data.content);
         setProperty(res.data.content)
@@ -209,69 +217,165 @@ const ProductComponent = () => {
 
   const handleChange = (event) => {
     const { name, value, type } = event.target;
-
     if (type === 'file') {
-      setProductCreate((prevInfo) => ({ ...prevInfo, [name]: event.target.files[0] }));
+      const selectedFile = event.target.files[0];
+      const imageURL = selectedFile ? URL.createObjectURL(selectedFile) : null;
+      setProductCreate((prevInfo) => ({
+        ...prevInfo,
+        [name]: selectedFile,
+        [`${name}Preview`]: imageURL,
+      }));
     } else {
       setProductCreate((prevInfo) => ({ ...prevInfo, [name]: value }));
     }
   };
 
   const handleSubmit = () => {
-    const formData = new FormData();
-    formData.append('idTrademark.idTrademark', productInfo.trademark);
-    formData.append('name', productInfo.name);
-    formData.append('description', productInfo.description);
-    formData.append('price', productInfo.price);
-    formData.append('size', productInfo.size);
-    formData.append('color', productInfo.color);
-    formData.append('file', productInfo.image);
-    formData.append('quantity', productInfo.quantity);
+    if (validateForm()) {
+      const formData = new FormData();
+      for (const key in productCreate) {
+        formData.append(key, productCreate[key]);
+      }
+      productService.createProduct(formData)
+        .then((res) => {
+          toast.success("Tạo sản phẩm thành công", {
+            position: "top-right",
+            autoClose: 1000
+          })
+          resetForm();
+          setShowAddModal(false);
+        }).catch(err => {
+          toast.error("Tạo sản phẩm thất bại", {
+            position: "top-right",
+            autoClose: 1000
+          })
 
-    try {
+          console.log(err);
+        })
+    }
+  };
 
+  const handleImageUpload = async (formData) => {
+    console.log(formData);
+  };
 
-    } catch (error) {
-      console.error('Error while adding product:', error);
-      // Handle errors if needed
+  const handleImageChange = useCallback((event) => {
+    const files = event.target.files;
+
+    if (files && files.length > 0) {
+      const formData = new FormData();
+      for (let i = 0; i < Math.min(files.length, 6); i++) {
+        formData.append('images', files[i]);
+      }
+
+      listImages.forEach((imageUrl, index) => {
+        formData.append(`oldImage${index + 1}`, imageUrl);
+      });
+
+      handleImageUpload(formData);
+
+      setListImages((prevImages) => [
+        ...prevImages,
+        ...Array.from(files).map(file => URL.createObjectURL(file)),
+      ]);
+    }
+  }, [handleImageUpload, listImages]);
+
+  const resetForm = () => {
+    setProductCreate({
+      nameProduct: '',
+      price: '',
+      idSize: '',
+      idProperties: '',
+      idCategory: '',
+      quantity: '',
+      image: null,
+      imagePreview: '',
+      description: '',
+      descriptionDetail: '',
+    });
+    setListImages([]);
+    setErrors("");
+  }
+
+  const validateForm = () => {
+    const newErrors = {};
+    console.log(productCreate);
+
+    if (!productCreate.nameProduct) {
+      newErrors.nameProduct = 'Vui lòng nhập tên sản phẩm';
+    }
+    if (!productCreate.price) {
+      newErrors.price = 'Vui lòng nhập đơn giá';
+    } if (!productCreate.idSize === "") {
+      newErrors.idSize = 'Vui lòng chọn kích thước';
+    } if (productCreate.idProperties === "") {
+      newErrors.idProperties = 'Vui lòng chọn màu sắc';
+    } if (productCreate.idCategory === "") {
+      newErrors.idCategory = 'Vui lòng chọn danh mục';
+    } if (!productCreate.quantity) {
+      newErrors.quantity = 'Vui lòng nhập số lượng';
+    } if (!productCreate.imagePreview) {
+      newErrors.imagePreview = 'Vui lòng chọn ảnh gốc';
+    } if (listImages.length === 0) {
+      newErrors.listImages = 'Vui lòng thêm ít nhất 1 ảnh phụ';
+    } if (!productCreate.description) {
+      newErrors.description = 'Vui lòng ghi mô tả';
+    } if (!productCreate.descriptionDetail) {
+      newErrors.descriptionDetail = 'Vui lòng ghi mô tả chi tiết';
     }
 
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
   };
   return (
     <div class="container">
+      <ToastContainer position="top-right"></ToastContainer>
+      <CRow>
+        <CCol md={1}>
+          <Button className="btn-loading" onClick={handleAddProduct}>
+            Tạo mới
+          </Button>
+        </CCol>
+        <CCol md={2}>
+          <CFormInput
+            type="text"
+            id="nameProduct"
+            placeholder="Tên sản phẩm"
+            onChange={(e) => handleInputChange('nameProduct', e.target.value)}
+          />
+        </CCol>
+        <CCol md={2} className="mb-3">
+          <CFormInput
+            type="text"
+            id="categoryName"
+            placeholder="Tên danh mục"
+            onChange={(e) => handleInputChange('categoryName', e.target.value)}
+          />
+        </CCol>
+        <CCol md={2}>
+          <CButton type="submit" className="mb-3" onClick={getProductList}>
+            Tìm Kiếm
+          </CButton>
+        </CCol>
+      </CRow>
       <CCard>
         <CCardBody>
-          <CForm class="row g-3">
-            <CCol xs="auto">
-              <CFormLabel htmlFor="staticEmail2" >
-                <Button variant="outline-primary" className="btn-loading" onClick={handleAddProduct}>
-                  Create
-                </Button>
-              </CFormLabel>
-            </CCol>
-            <CCol xs="auto">
-              <CFormInput type="text" id="nameProduct" placeholder="Product Name" />
-            </CCol>
-            <CCol xs="auto">
-              <CButton type="submit" className="mb-3">
-                Search
-              </CButton>
-            </CCol>
-          </CForm>
           <div >
-            <CTable striped bordered hover responsive>
+            <CTable bordered hover responsive>
               <thead>
                 <tr style={{ textAlign: "center" }}>
-                  <th>ID</th>
-                  <th>Name</th>
-                  <th>Image</th>
-                  <th>Price</th>
-                  <th>Quantity</th>
-                  <th>Category</th>
-                  <th>Date create</th>
-                  <th>Date update</th>
-                  <th>Description</th>
-                  <th>Actions</th>
+                  <th>STT</th>
+                  <th>Tên sản phẩm</th>
+                  <th>Ảnh</th>
+                  <th>Giá tiền</th>
+                  <th>Danh mục</th>
+                  <th>Ngày tạo</th>
+                  <th>Trạng thái</th>
+                  <th>Mô tả</th>
+                  <th>Mô tả chi tiết</th>
+                  <th>Chức năng</th>
                 </tr>
               </thead>
               <tbody>
@@ -283,19 +387,24 @@ const ProductComponent = () => {
                     </td>
                     <td>{product.nameProduct}</td>
                     <td><CImage src={product.image} width={"70px"} height={"50px"}></CImage></td>
-                    <td>{product.price}</td>
-                    <td></td>
-                    <td>{product.categoryEntity.name}</td>
-                    <td>{product.date_create}</td>
-                    <td>{product.date_update}</td>
-                    <td>{product.description}</td>
+                    <td>{format.formatVND(product.price)}</td>
+                    <td width={"100px"}>{product.categoryEntity.name}</td>
+                    <td width={"100px"}>{product.date_create}</td>
+                    <td>{product.status}</td>
+                    <td className="truncate" title={product.description}>
+                      {product.description}
+                    </td>
+                    <td className="truncate" title={product.descriptionDetail}>
+                      {product.descriptionDetail}
+                    </td>
+
                     <td>
                       <CRow>
                         <CCol md={4}>
                           <BsFillPencilFill onClick={() => handleUpdateProduct(product)}></BsFillPencilFill>
                         </CCol>
                         <CCol md={4}>
-                          <BsTrash onClick={() => deleteProduct(product.id)}></BsTrash>
+                          <BsTrash onClick={() => backPage(product.id, product.nameProduct)}></BsTrash>
                         </CCol>
                         <CCol md={4}>
                           <BsFillEyeFill onClick={() => showProductDetail(product.id)}></BsFillEyeFill>
@@ -307,31 +416,34 @@ const ProductComponent = () => {
                 ))}
               </tbody>
             </CTable>
-
+            <br />
             <PaginationCustom
               currentPageP={currentPage}
               maxPageNumber={5}
               total={totalPages}
               onChange={handlePageChange}
             />
+
             <Modal show={showModal} onHide={cancelShowProductDetail} centered>
               <Modal.Header closeButton>
-                <Modal.Title>Product Detail</Modal.Title>
+                <Modal.Title>Sản phẩm chi tiết</Modal.Title>
               </Modal.Header>
               <Modal.Body>
                 <Table striped bordered hover responsive>
                   <thead>
                     <tr style={{ textAlign: "center" }}>
-                      <th>ID</th>
-                      <th>Quantity</th>
-                      <th>Property</th>
-                      <th>Size</th>
+                      <th>STT</th>
+                      <th>Tên sản phẩm</th>
+                      <th>Số lượng</th>
+                      <th>Màu</th>
+                      <th>Kích cỡ</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {productDetail.map((productDetail, index) => (
+                    {currentItemsDetail.map((productDetail, index) => (
                       <tr key={index}>
-                        <td>{index + 1}</td>
+                        <td>{indexOfFirstItemDetail + index + 1}</td>
+                        <td>{productDetail.idProduct.nameProduct}</td>
                         <td>{productDetail.quantity}</td>
                         <td>{productDetail.idProperty.name}</td>
                         <td>{productDetail.idSize.name}</td>
@@ -339,6 +451,14 @@ const ProductComponent = () => {
                     ))}
                   </tbody>
                 </Table>
+
+                <PaginationCustom
+                  maxPageNumber={5}
+                  total={totalPagesDetail}
+                  perPage={itemsPerPage}
+                  onChange={handlePageChangeDetail}
+                  currentPageP={currentPageDetail}
+                />
               </Modal.Body>
               <Modal.Footer>
                 <Button variant="secondary" onClick={cancelShowProductDetail}>
@@ -346,101 +466,9 @@ const ProductComponent = () => {
                 </Button>
               </Modal.Footer>
             </Modal>
-            {/*
 
-
-        <Modal show={showUpdateModal} onHide={cancelUpdateProduct}>
-          <Modal.Header closeButton>
-            <Modal.Title>Cập nhật sản phẩm</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form>
-              <Form.Group controlId="formId">
-                <Form.Label>ID</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="idProduct"
-                  placeholder="Enter ID"
-                  onChange={handleChangeUpdate}
-                  value={productToUpdate?.id_product || ''} disabled />
-              </Form.Group>
-              <Form.Group controlId="formName">
-                <Form.Label>Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="name"
-                  placeholder="Enter name"
-                  onChange={handleChangeUpdate}
-                  value={productToUpdate?.name || ''} />
-              </Form.Group>
-              <Form.Group controlId="formDescription">
-                <Form.Label>Description</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  name="description"
-                  rows={3}
-                  placeholder="Enter description"
-                  onChange={handleChangeUpdate}
-                  value={productToUpdate.description}
-                />
-              </Form.Group>
-              <Form.Group controlId="formPrice">
-                <Form.Label>Price</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="price"
-                  placeholder="Enter price"
-                  onChange={handleChangeUpdate}
-                  value={productToUpdate?.price || ''} />
-              </Form.Group>
-              <Form.Group controlId="formSize">
-                <Form.Label>Size</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="size"
-                  placeholder="Enter size"
-                  onChange={handleChangeUpdate}
-                  value={productToUpdate?.size || ''} />
-              </Form.Group>
-              <Form.Group controlId="formColor">
-                <Form.Label>Color</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="color"
-                  placeholder="Enter color"
-                  onChange={handleChangeUpdate}
-                  value={productToUpdate?.color || ''} />
-              </Form.Group>
-              <Form.Group controlId="formImage">
-                <Form.Label>Image</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Enter image URL"
-                  value={productToUpdate?.image || ''} disabled />
-              </Form.Group>
-              <Form.Group controlId="formQuantity">
-                <Form.Label>Quantity</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="quantity"
-                  placeholder="Enter quantity"
-                  onChange={handleChangeUpdate}
-                  value={productToUpdate?.quantity || ''} />
-              </Form.Group>
-            </Form>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={cancelUpdateProduct}>
-              Hủy
-            </Button>
-            <Button variant="primary" onClick={confirmUpdateProduct}>
-              Lưu thay đổi
-            </Button>
-          </Modal.Footer>
-        </Modal>
-*/}
             <Modal show={showAddModal} onHide={cancelAddProduct}
-              size="lg"
+              size="xl"
               aria-labelledby="contained-modal-title-vcenter"
               centered
             >
@@ -452,100 +480,126 @@ const ProductComponent = () => {
                   <CRow>
                     <CCol md={6}>
                       <Form.Group controlId="formName">
-                        <Form.Label>Name</Form.Label>
+                        <Form.Label>Tên sản phẩm</Form.Label>
                         <Form.Control
                           type="text"
-                          name="name"
-                          value={productCreate.name}
+                          name="nameProduct"
+                          value={productCreate.nameProduct}
                           onChange={handleChange}
-                          placeholder="Enter name" />
+                          placeholder="Nhập tên sản phẩm" />
+                        {errors.nameProduct && <div className="error-message">{errors.nameProduct}</div>}
                       </Form.Group>
                     </CCol>
                     <CCol>
                       <Form.Group controlId="formPrice">
-                        <Form.Label>Price</Form.Label>
+                        <Form.Label>Đơn giá</Form.Label>
                         <Form.Control
                           type="text"
-                          placeholder="Enter price"
+                          placeholder="Nhập đơn giá"
                           name="price"
                           value={productCreate.price}
                           onChange={handleChange}
                         />
+                        {errors.price && <div className="error-message">{errors.price}</div>}
+
                       </Form.Group>
                     </CCol>
                     <CCol md={6}>
-                      <Form.Label>Size</Form.Label>
+                      <Form.Label>Kích thước</Form.Label>
                       <Form.Control
                         as="select"
-                        name="size"
-                        value={productCreate.size}
+                        name="idSize"
+                        value={productCreate.idSize}
                         onChange={handleChange}
                       >
-                        <option value="">Select a size</option>
+                        <option value={""}>Chọn kích thước</option>
                         {size.map((item) => (
                           <option key={item.id} value={item.id}>
                             {item.name}
                           </option>
                         ))}
+                        {errors.idSize && <div className="error-message">{errors.idSize}</div>}
                       </Form.Control>
 
                     </CCol>
                     <CCol md={6}>
-                      <Form.Label>Color</Form.Label>
+                      <Form.Label>Màu sắc</Form.Label>
                       <Form.Control
                         as="select"
-                        name="color"
-                        value={productCreate.color}
+                        name="idProperties"
+                        value={productCreate.idProperties}
                         onChange={handleChange}
                       >
-                        <option value="">Select a color</option>
+                        <option value={""}>Chọn màu sắc</option>
                         {property.map((item) => (
                           <option key={item.idProperty} value={item.idProperty}>
                             {item.name}
                           </option>
                         ))}
+                        {errors.idProperties && <div className="error-message">{errors.idProperties}</div>}
+
                       </Form.Control>
                     </CCol>
                     <CCol md={6}>
                       <Form.Group controlId="formTrademark">
-                        <Form.Label>Trademark</Form.Label>
+                        <Form.Label>Danh mục</Form.Label>
                         <Form.Control
                           as="select"
-                          name="trademark"
-                          value={productCreate.trademark}
+                          name="idCategory"
+                          value={productCreate.idCategory}
                           onChange={handleChange}
                         >
-                          <option value="">Select a trademark</option>
+                          <option value={""}>Chọn danh mục</option>
                           {trademarks.map((item) => (
                             <option key={item.id} value={item.id}>
                               {item.nameCategory}
                             </option>
                           ))}
+                          {errors.idCategory && <div className="error-message">{errors.idCategory}</div>}
+
                         </Form.Control>
                       </Form.Group>
                     </CCol>
                     <CCol md={6}>
                       <Form.Group controlId="formQuantity">
-                        <Form.Label>Quantity</Form.Label>
+                        <Form.Label>Số lượng</Form.Label>
                         <Form.Control
                           type="text"
-                          placeholder="Enter quantity"
+                          placeholder="Nhập số lượng"
                           name="quantity"
                           value={productCreate.quantity}
                           onChange={handleChange}
                         />
+                        {errors.quantity && <div className="error-message">{errors.quantity}</div>}
                       </Form.Group>
                     </CCol>
-                    <Form.Group controlId="formImage">
-                      <Form.Label>Image</Form.Label>
-                      <Form.Control
-                        type="file"
-                        placeholder="Chose image"
-                        name="image"
-                        onChange={handleChange} />
-                    </Form.Group>
+                    <CCol md={6}>
+                      <Form.Group controlId="formImage">
+                        <Form.Label>Ảnh chính</Form.Label>
+                        <Form.Control
+                          type="file"
+                          placeholder="Chọn hình ảnh"
+                          name="image"
+                          onChange={handleChange} />
+                        {errors.imagePreview && <div className="error-message">{errors.imagePreview}</div>}
+                      </Form.Group>
+                      <ImagePreviews imageURL={productCreate.imagePreview} />
+                    </CCol>
+                    <CCol md={6}>
+                      <Form.Group controlId="formImage">
+                        <Form.Label>Chọn nhiều hình ảnh</Form.Label>
+                        <Form.Control
+                          type="file"
+                          placeholder="Chọn hình ảnh"
+                          name="image"
+                          onChange={handleImageChange}
+                        />
+                        {errors.listImages && <div className="error-message">{errors.listImages}</div>}
+                      </Form.Group>
+                      <ImagePreviewList imageURLs={listImages} />
+                    </CCol>
                     <Form.Group controlId="formDescription">
-                      <Form.Label>Description</Form.Label>
+                      <Form.Label >Mô tả</Form.Label>
                       <Form.Control
                         as="textarea"
                         rows={3}
@@ -554,9 +608,11 @@ const ProductComponent = () => {
                         value={productCreate.description}
                         onChange={handleChange}
                       />
+                      {errors.description && <div className="error-message">{errors.description}</div>}
+
                     </Form.Group>
                     <Form.Group controlId="formDescription">
-                      <Form.Label>Description_detail</Form.Label>
+                      <Form.Label>Mô tả chi tiết</Form.Label>
                       <Form.Control
                         as="textarea"
                         rows={3}
@@ -565,15 +621,10 @@ const ProductComponent = () => {
                         value={productCreate.descriptionDetail}
                         onChange={handleChange}
                       />
+                      {errors.descriptionDetail && <div className="error-message">{errors.descriptionDetail}</div>}
+
                     </Form.Group>
                   </CRow>
-
-
-
-
-
-
-
                 </Form>
               </Modal.Body>
               <Modal.Footer>
@@ -593,3 +644,19 @@ const ProductComponent = () => {
   )
 }
 export default ProductComponent;
+
+const ImagePreviews = ({ imageURL }) => (
+  <div className="image-preview-container">
+    {imageURL && <img src={imageURL} alt="Preview" className="image-preview" />}
+  </div>
+);
+
+const ImagePreviewList = ({ imageURLs }) => (
+  <Slider dots infinite slidesToShow={Math.min(3, imageURLs.length)} slidesToScroll={Math.min(3, imageURLs.length)} >
+    {imageURLs.map((url, index) => (
+      <div key={index} className="image-preview-container">
+        <img src={url} alt={`Preview ${index + 1}`} className="image-preview" />
+      </div>
+    ))}
+  </Slider>
+);

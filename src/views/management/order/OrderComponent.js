@@ -128,9 +128,6 @@ const OrderComponent = () => {
 
   }
 
-
-
-
   const handleStatusChange = (event) => {
     const newStatus = event.target.value;
     setSelectedStatus(newStatus);
@@ -207,7 +204,6 @@ const OrderComponent = () => {
       startDate: date ? format(date, 'yyyy-MM-dd') : null,
     }));
   };
-  console.log(searchBill);
   return (
     <div class="container">
       <ToastContainer position="top-right"></ToastContainer>

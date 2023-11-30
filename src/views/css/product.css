@@ -1,0 +1,56 @@
+.truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+    cursor: pointer;
+    position: relative;
+}
+
+.truncate:hover::before {
+    content: attr(title);
+    display: inline-block;
+    background-color: rgba(255, 255, 255, 0.342);
+    color: black;
+    border: 1px solid #ccc;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    top: 100%;
+    left: 0;
+    white-space: normal;
+    max-width: none;
+    box-shadow: 0 0 45px rgba(4, 63, 151, 0.2);
+}
+
+.leavePage{
+    background-color: red !important;
+}
+
+.image-preview-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  border: 1px solid #ddd;
+  overflow: hidden;
+  margin-top: 10px;
+  position: relative;
+}
+
+/* Style cho hình ảnh xem trước */
+.image-preview {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.error-message{
+  color: red;
+}
+  
+ 
