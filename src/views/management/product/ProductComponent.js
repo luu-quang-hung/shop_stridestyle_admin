@@ -47,7 +47,6 @@ const ProductComponent = () => {
   });
   const [showModal, setShowModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
-  const [productIdToDelete, setProductIdToDelete] = useState(null);
   const [productToUpdate, setProductToUpdate] = useState({});
   const [showAddModal, setShowAddModal] = useState(false);
   const [productInfo, setProductInfo] = useState([]);
@@ -167,11 +166,21 @@ const ProductComponent = () => {
       })
   }
 
+  //cập nhật
+
   const handleUpdateProduct = (product) => {
     setProductToUpdate(product);
+    console.log(productToUpdate);
     setShowUpdateModal(true);
   };
 
+  const cancelUpdateModal = () => {
+    setShowUpdateModal(false);
+  };
+
+
+
+  //them mới
 
   const handleAddProduct = () => {
     getTradeMarkList();
@@ -637,6 +646,132 @@ const ProductComponent = () => {
               </Modal.Footer>
             </Modal>
           </div>
+
+          <Modal show={showUpdateModal} onHide={cancelUpdateModal}
+            size="xl"
+            aria-labelledby="contained-modal-title-vcenter"
+            centered
+          >
+            <Modal.Header closeButton>
+              <Modal.Title>Sửa sản phẩm</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <Form>
+                <CRow>
+                <CCol md={6}>
+                <Form.Group controlId="formName">
+                      <Form.Label>Mã sản phẩm</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="id"
+                        value={productToUpdate.id}
+                        onChange={handleChange}
+                        disabled
+                        readOnly
+                        />
+                    </Form.Group>
+                </CCol>
+                  <CCol md={6}>
+                    <Form.Group controlId="formName">
+                      <Form.Label>Tên sản phẩm</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="nameProduct"
+                        value={productToUpdate.nameProduct}
+                        onChange={handleChange}
+                        placeholder="Nhập tên sản phẩm" />
+                      {errors.nameProduct && <div className="error-message">{errors.nameProduct}</div>}
+                    </Form.Group>
+                  </CCol>
+                  <CCol>
+                    <Form.Group controlId="formPrice">
+                      <Form.Label>Đơn giá</Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Nhập đơn giá"
+                        name="price"
+                        value={productToUpdate.price}
+                        onChange={handleChange}
+                      />
+                      {errors.price && <div className="error-message">{errors.price}</div>}
+
+                    </Form.Group>
+                  </CCol>
+                  <CCol md={6}>
+                    <Form.Group controlId="formQuantity">
+                      <Form.Label>Trạng thái</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="status"
+                        value={productToUpdate.status}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </CCol>
+                
+                  <CCol md={6}>
+                    <Form.Group controlId="formImage">
+                      <Form.Label>Ảnh chính</Form.Label>
+                      <Form.Control
+                        type="file"
+                        placeholder="Chọn hình ảnh"
+                        name="image"
+                        onChange={handleChange} />
+                      {errors.imagePreview && <div className="error-message">{errors.imagePreview}</div>}
+                    </Form.Group>
+                    <ImagePreviews imageURL={productToUpdate.image} />
+                  </CCol>
+                  <CCol md={6}>
+                    <Form.Group controlId="formImage">
+                      <Form.Label>Chọn nhiều hình ảnh</Form.Label>
+                      <Form.Control
+                        type="file"
+                        placeholder="Chọn hình ảnh"
+                        name="image"
+                        onChange={handleImageChange}
+                      />
+                      {errors.listImages && <div className="error-message">{errors.listImages}</div>}
+                    </Form.Group>
+                    <ImagePreviewList imageURLs={listImages} />
+                  </CCol>
+                  <Form.Group controlId="formDescription">
+                    <Form.Label >Mô tả</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={3}
+                      placeholder="Enter description"
+                      name="description"
+                      value={productToUpdate.description}
+                      onChange={handleChange}
+                    />
+                    {errors.description && <div className="error-message">{errors.description}</div>}
+
+                  </Form.Group>
+                  <Form.Group controlId="formDescription">
+                    <Form.Label>Mô tả chi tiết</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={3}
+                      placeholder="Enter description detail"
+                      name="descriptionDetail"
+                      value={productToUpdate.descriptionDetail}
+                      onChange={handleChange}
+                    />
+                    {errors.descriptionDetail && <div className="error-message">{errors.descriptionDetail}</div>}
+
+                  </Form.Group>
+                </CRow>
+              </Form>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" onClick={cancelUpdateModal}>
+                Hủy
+              </Button>
+              <Button variant="primary" onClick={handleSubmit}>
+                Thêm mới
+              </Button>
+            </Modal.Footer>
+          </Modal>
         </CCardBody>
       </CCard>
 

@@ -78,11 +78,29 @@ const EvenComponent = () => {
     setVoucherSearch({ ...voucherSearch, page: page - 1 })
     setCurrentPageSize(page)
   };
-
   return (
     <CContainer>
       <CRow>
         <CCol md="5">
+        <div class="nav">
+            <CForm class="row g-3">
+              <CCol xs="auto">
+                <CFormLabel htmlFor="staticEmail2" >
+                  <Button className="btn-loading"  >
+                    Thêm mới
+                  </Button>
+                </CFormLabel>
+              </CCol>
+              <CCol xs="auto">
+                <CFormInput
+                  type="text"
+                  id="name"
+                  placeholder="Tìm kiếm tên Sự Kiện"
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                />
+              </CCol>
+            </CForm>
+          </div>
           <CCard >
             <CCardBody>
               <h3>Event</h3>
@@ -130,6 +148,25 @@ const EvenComponent = () => {
           </CCard>
         </CCol>
         <CCol md="7">
+        <div class="nav">
+            <CForm class="row g-3">
+              <CCol xs="auto">
+                <CFormLabel htmlFor="staticEmail2" >
+                  <Button className="btn-loading"  >
+                    Thêm mới
+                  </Button>
+                </CFormLabel>
+              </CCol>
+              <CCol xs="auto">
+                <CFormInput
+                  type="text"
+                  id="name"
+                  placeholder="Tìm kiếm tên voucher"
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                />
+              </CCol>
+            </CForm>
+          </div>
           <CCard>
             <CCardBody>
               <h3>Voucher</h3>

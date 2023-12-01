@@ -1,6 +1,8 @@
 import React from 'react'
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
+const SaleCounter = React.lazy(() => import('./views/management/saleCounter/SaleCounterComponent'))
+
 const Product = React.lazy(() => import('./views/management/product/ProductComponent'))
 
 const Order = React.lazy(() => import('./views/management/order/OrderComponent'))
@@ -9,18 +11,20 @@ const Trademark = React.lazy(() => import('./views/management/category/CategoryC
 const Property = React.lazy(() => import('./views/management/property/PropertyComponent'))
 const Event =  React.lazy(() => import('./views/management/event/EventComponent'))
 const routes = [
-  { path: '/', exact: true, name: 'Home' },
-  { path: '/dashboard', name: 'Dashboard', element: Dashboard },
-  { path: '/management', name: 'Management', element:Product , exact: true },
+  { path: '/', exact: true, name: 'Trang chủ' },
+  { path: '/dashboard', name: 'Thống kê', element: Dashboard },
+  { path: '/management', name: 'Quản lý', element:Product , exact: true },
+  { path: '/sale-counter', name: 'Bán hàng tại quầy', element:SaleCounter , exact: true },
 
   //Management
 
-  {path:'/management/product',name: 'Product' , element: Product},
-  {path:'/management/order',name: 'Order' , element: Order},
-  {path:'/management/customer',name: 'Customer' , element: Customer},
-  {path:'/management/trademark',name: 'Trademark' , element: Trademark},
-  {path:'/management/property',name: 'Property' , element: Property},
-  {path:'/management/event',name: 'Event' , element: Event}
+  {path:'/management/product',name: 'Sản phẩm' , element: Product},
+  {path:'/management/order',name: 'Đơn hàng' , element: Order},
+  {path:'/management/customer',name: 'Khách hàng' , element: Customer},
+  {path:'/management/trademark',name: 'Danh mục' , element: Trademark},
+  {path:'/management/property',name: 'Màu sắc' , element: Property},
+  {path:'/management/event',name: 'Sự kiện' , element: Event}
+
 
 ]
 
