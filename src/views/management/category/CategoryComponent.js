@@ -22,6 +22,9 @@ import { Table, Pagination, Button, Modal, Form } from 'react-bootstrap';
 import PaginationCustom from 'src/views/pagination/PaginationCustom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { confirmAlert } from "react-confirm-alert"; // Import
+import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
+
 const CategoryComponent = () => {
 
   const [trademark, setTrademark] = useState([]);
@@ -50,10 +53,6 @@ const CategoryComponent = () => {
   }, [searchTrademark]);
 
   const getTradeMarkList = () => {
-
-    console.log(
-      searchTrademark
-    );
     categoryService.findAllCategory(searchTrademark)
       .then(res => {
         setTrademark(res.data.content)
@@ -103,7 +102,6 @@ const CategoryComponent = () => {
   };
 
   const handleInputChange = (field, value) => {
-    console.log(searchTrademark);
     const nullValue = value === 'null' ? null : value;
     setSearchTrademark((prevSearchBill) => ({
       ...prevSearchBill,
@@ -120,10 +118,25 @@ const CategoryComponent = () => {
     setTrademarkToUpdate(trademark);
     setShowModal(true);
   };
-                
-  // Xác nhận cập nhật sản phẩm
+
   const confirmUpdateTrademark = () => {
-    console.log(trademarkToUpdate);
+    categoryService.updateCategory(trademarkToUpdate)
+      .then(res => {
+        console.log(res);
+        toast.success("Cập nhật danh mục thành công", {
+          position: "top-right",
+          autoClose: 1000
+        })
+        getTradeMarkList();;
+        setShowModal(false)
+
+      }).catch(err => {
+        console.log(err);
+        toast.error("Cập nhật danh mục thất bại", {
+          position: "top-right",
+          autoClose: 1000
+        })
+      })
   };
 
   const cancelUpdateTrademark = () => {
@@ -134,31 +147,71 @@ const CategoryComponent = () => {
     const { name, value } = event.target;
     setTrademarkToUpdate((prevInfo) => ({ ...prevInfo, [name]: value }));
   }
+
+  const confirmDeleteCategory = (idCate, nameCate) => {
+    if (idCate) {
+      confirmAlert({
+        message:
+          `Bạn có chắc chắn muốn xóa danh mục ` + nameCate + ` không ?`,
+        buttons: [
+          {
+            label: "Trở lại",
+            className: "stayPage",
+          },
+          {
+            label: "Xác nhận",
+            onClick: () => deleteCategory(idCate),
+            className: "leavePage",
+          },
+        ],
+      });
+    }
+  };
+  const deleteCategory = (idCate) => {
+    const json = {
+      id: idCate
+    }
+    categoryService.deleteCategory(json)
+      .then(res => {
+        toast.success("Xóa danh mục thành công", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        getTradeMarkList();
+      })
+      .catch(error => {
+        toast.error("Xóa danh mục thất bại", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        console.log("Error load delete", error);
+      })
+  }
   return (
     <CContainer>
       <ToastContainer position="top-right"></ToastContainer>
       <div class="nav">
-            <CForm class="row g-3">
-              <CCol xs="auto">
-                <CFormLabel htmlFor="staticEmail2" >
-                  <Button className="btn-loading" onClick={handleAddTrademark} >
-                    Thêm mới
-                  </Button>
-                </CFormLabel>
-              </CCol>
-              <CCol xs="auto">
-                <CFormInput
-                  type="text"
-                  id="name"
-                  placeholder="Tên danh mục"
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                />
-              </CCol>
-            </CForm>
-          </div>
+        <CForm class="row g-3">
+          <CCol xs="auto">
+            <CFormLabel htmlFor="staticEmail2" >
+              <Button className="btn-loading" onClick={handleAddTrademark} >
+                Thêm mới
+              </Button>
+            </CFormLabel>
+          </CCol>
+          <CCol xs="auto">
+            <CFormInput
+              type="text"
+              id="name"
+              placeholder="Tên danh mục"
+              onChange={(e) => handleInputChange('name', e.target.value)}
+            />
+          </CCol>
+        </CForm>
+      </div>
       <CCard>
         <CCardBody>
-         
+
           <div class="table">
             <CTable bordered hover responsive>
               <thead>
@@ -184,7 +237,7 @@ const CategoryComponent = () => {
                           <BsFillPencilFill onClick={() => handleUpdateTrademark(trademark)}></BsFillPencilFill>
                         </CCol>
                         <CCol md={4}>
-                          <BsTrash ></BsTrash>
+                          <BsTrash onClick={() => confirmDeleteCategory(trademark.id, trademark.name)}></BsTrash>
                         </CCol>
                       </CRow>
                     </td>
@@ -268,10 +321,9 @@ const CategoryComponent = () => {
                 <CFormSelect
                   name="gender"
                   label="Giới tính"
-                  onChange={handleChange}
-                  value={newTrademark.gender}
+                  onChange={handleChangeUpdate}
+                  value={trademarkToUpdate.gender}
                   options={[
-                    'Chọn giới tính',
                     { label: 'Nam', value: false },
                     { label: 'Nữ', value: true },
 
