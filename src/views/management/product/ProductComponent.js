@@ -239,6 +239,21 @@ const ProductComponent = () => {
     }
   };
 
+  const handleChangeUpdate = (event) => {
+    const { name, value, type } = event.target;
+    if (type === 'file') {
+      const selectedFile = event.target.files[0];
+      const imageURL = selectedFile ? URL.createObjectURL(selectedFile) : null;
+      setProductToUpdate((prevInfo) => ({
+        ...prevInfo,
+        [name]: selectedFile,
+        [`${name}Preview`]: imageURL,
+      }));
+    } else {
+      setProductToUpdate((prevInfo) => ({ ...prevInfo, [name]: value }));
+    }
+  };
+
   const handleSubmit = () => {
     if (validateForm()) {
       const formData = new FormData();
@@ -263,6 +278,34 @@ const ProductComponent = () => {
         })
     }
   };
+
+  const handleSubmitUpdate = () => {
+    console.log(productToUpdate);
+    // if (validateFormUpdate()) {
+      const formData = new FormData();
+      for (const key in productToUpdate) {
+        formData.append(key, productToUpdate[key]);
+      }
+      productService.createProduct(formData)
+        .then((res) => {
+          console.log(res);
+          toast.success("Tạo sản phẩm thành công", {
+            position: "top-right",
+            autoClose: 1000
+          })
+          setShowUpdateModal(false);
+        }).catch(err => {
+          toast.error("Tạo sản phẩm thất bại", {
+            position: "top-right",
+            autoClose: 1000
+          })
+
+          console.log(err);
+        })
+    // }
+  };
+
+
 
   const handleImageUpload = async (formData) => {
     console.log(formData);
@@ -338,6 +381,32 @@ const ProductComponent = () => {
 
     return Object.keys(newErrors).length === 0;
   };
+
+  const validateFormUpdate = () => {
+    const newErrors = {};
+
+    if (!productToUpdate.nameProduct) {
+      newErrors.nameProduct = 'Vui lòng nhập tên sản phẩm';
+    }
+    if (!productToUpdate.price) {
+      newErrors.price = 'Vui lòng nhập đơn giá';
+    } if (!productToUpdate.quantity) {
+      newErrors.quantity = 'Vui lòng nhập số lượng';
+    } if (!productToUpdate.imagePreview) {
+      newErrors.imagePreview = 'Vui lòng chọn ảnh gốc';
+    } if (listImages.length === 0) {
+      newErrors.listImages = 'Vui lòng thêm ít nhất 1 ảnh phụ';
+    } if (!productToUpdate.description) {
+      newErrors.description = 'Vui lòng ghi mô tả';
+    } if (!productToUpdate.descriptionDetail) {
+      newErrors.descriptionDetail = 'Vui lòng ghi mô tả chi tiết';
+    }
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+  };
+  console.log(productToUpdate);
   return (
     <div class="container">
       <ToastContainer position="top-right"></ToastContainer>
@@ -383,7 +452,7 @@ const ProductComponent = () => {
                   <th>Ngày tạo</th>
                   <th>Trạng thái</th>
                   <th>Mô tả</th>
-                  <th>Mô tả chi tiết</th>
+                  <th>Mô tả chi tiết</th> 
                   <th>Chức năng</th>
                 </tr>
               </thead>
@@ -658,19 +727,19 @@ const ProductComponent = () => {
             <Modal.Body>
               <Form>
                 <CRow>
-                <CCol md={6}>
-                <Form.Group controlId="formName">
+                  <CCol md={6}>
+                    <Form.Group controlId="formName">
                       <Form.Label>Mã sản phẩm</Form.Label>
                       <Form.Control
                         type="text"
                         name="id"
                         value={productToUpdate.id}
-                        onChange={handleChange}
+                        onChange={handleChangeUpdate}
                         disabled
                         readOnly
-                        />
+                      />
                     </Form.Group>
-                </CCol>
+                  </CCol>
                   <CCol md={6}>
                     <Form.Group controlId="formName">
                       <Form.Label>Tên sản phẩm</Form.Label>
@@ -678,7 +747,7 @@ const ProductComponent = () => {
                         type="text"
                         name="nameProduct"
                         value={productToUpdate.nameProduct}
-                        onChange={handleChange}
+                        onChange={handleChangeUpdate}
                         placeholder="Nhập tên sản phẩm" />
                       {errors.nameProduct && <div className="error-message">{errors.nameProduct}</div>}
                     </Form.Group>
@@ -691,12 +760,32 @@ const ProductComponent = () => {
                         placeholder="Nhập đơn giá"
                         name="price"
                         value={productToUpdate.price}
-                        onChange={handleChange}
+                        onChange={handleChangeUpdate}
                       />
                       {errors.price && <div className="error-message">{errors.price}</div>}
 
                     </Form.Group>
                   </CCol>
+                  <CCol md={6}>
+                      <Form.Group controlId="formTrademark">
+                        <Form.Label>Danh mục</Form.Label>
+                        <Form.Control
+                          as="select"
+                          name="idCategory"
+                          // value={(productToUpdate.categoryEntity && productToUpdate.categoryEntity.id) ?? ""}
+                          onChange={handleChangeUpdate}
+                        >
+                          <option value={""}>Chọn danh mục</option>
+                          {trademarks.map((item) => (
+                            <option key={item.id} value={item.id}>
+                              {item.nameCategory}
+                            </option>
+                          ))}
+                          {errors.idCategory && <div className="error-message">{errors.idCategory}</div>}
+
+                        </Form.Control>
+                      </Form.Group>
+                    </CCol>
                   <CCol md={6}>
                     <Form.Group controlId="formQuantity">
                       <Form.Label>Trạng thái</Form.Label>
@@ -704,11 +793,11 @@ const ProductComponent = () => {
                         type="text"
                         name="status"
                         value={productToUpdate.status}
-                        onChange={handleChange}
+                        onChange={handleChangeUpdate}
                       />
                     </Form.Group>
                   </CCol>
-                
+
                   <CCol md={6}>
                     <Form.Group controlId="formImage">
                       <Form.Label>Ảnh chính</Form.Label>
@@ -716,10 +805,10 @@ const ProductComponent = () => {
                         type="file"
                         placeholder="Chọn hình ảnh"
                         name="image"
-                        onChange={handleChange} />
+                        onChange={handleChangeUpdate} />
                       {errors.imagePreview && <div className="error-message">{errors.imagePreview}</div>}
                     </Form.Group>
-                    <ImagePreviews imageURL={productToUpdate.image} />
+                    <ImagePreviews imageURL={productToUpdate.imagePreview } />
                   </CCol>
                   <CCol md={6}>
                     <Form.Group controlId="formImage">
@@ -728,7 +817,7 @@ const ProductComponent = () => {
                         type="file"
                         placeholder="Chọn hình ảnh"
                         name="image"
-                        onChange={handleImageChange}
+                        onChange={handleChangeUpdate}
                       />
                       {errors.listImages && <div className="error-message">{errors.listImages}</div>}
                     </Form.Group>
@@ -742,7 +831,7 @@ const ProductComponent = () => {
                       placeholder="Enter description"
                       name="description"
                       value={productToUpdate.description}
-                      onChange={handleChange}
+                      onChange={handleChangeUpdate}
                     />
                     {errors.description && <div className="error-message">{errors.description}</div>}
 
@@ -755,7 +844,7 @@ const ProductComponent = () => {
                       placeholder="Enter description detail"
                       name="descriptionDetail"
                       value={productToUpdate.descriptionDetail}
-                      onChange={handleChange}
+                      onChange={handleChangeUpdate}
                     />
                     {errors.descriptionDetail && <div className="error-message">{errors.descriptionDetail}</div>}
 
@@ -767,8 +856,8 @@ const ProductComponent = () => {
               <Button variant="secondary" onClick={cancelUpdateModal}>
                 Hủy
               </Button>
-              <Button variant="primary" onClick={handleSubmit}>
-                Thêm mới
+              <Button variant="primary" onClick={handleSubmitUpdate}>
+               Cập nhật
               </Button>
             </Modal.Footer>
           </Modal>

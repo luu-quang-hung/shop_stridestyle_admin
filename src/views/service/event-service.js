@@ -22,32 +22,32 @@ class EventService {
     return axios.get(API_URL_VOUCHER + 'find-by-id/' + id, { headers: authHeader() });
   }
 
-  createProperty(json) {
+  createEvent(json) {
     return axios.post(API_URL_EVENT + `create`, json, { headers: authHeader() });
 
   }
 
-  createSize(json) {
+  createVoucher(json) {
     return axios.post(API_URL_VOUCHER + `create`, json, { headers: authHeader() });
 
   }
 
-  updateProperty(json) {
+  updateEvent(json) {
     return axios.post(API_URL_EVENT + `update`, json, { headers: authHeader() });
 
   }
 
-  updateSize(json) {
+  updateVoucher(json) {
     return axios.post(API_URL_VOUCHER + `update`, json, { headers: authHeader() });
   }
 
 
-  deleteProperty(json) {
+  deleteEvent(json) {
     return axios.post(API_URL_EVENT + `delete`, json, { headers: authHeader() });
 
   }
 
-  deleteSize(json) {
+  deleteVoucher(json) {
     return axios.post(API_URL_VOUCHER + `delete`, json, { headers: authHeader() });
 
   }

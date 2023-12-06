@@ -340,7 +340,6 @@ const PropertyComponent = () => {
   };
 
   
-
   return (
     <CContainer>
       <ToastContainer position="top-right"></ToastContainer>
