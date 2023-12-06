@@ -31,7 +31,7 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Bán hàng tại quầy',
-    to: '/management/product',
+    to: '/sale-counter',
     icon: <CIcon icon={cilBank} customClassName="nav-icon" ></CIcon>
   },
   {

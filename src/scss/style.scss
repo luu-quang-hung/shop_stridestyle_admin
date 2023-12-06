@@ -9,6 +9,7 @@ $enable-rtl: true;
 
 // Import Chart.js custom tooltips styles
 @import "@coreui/chartjs/scss/coreui-chartjs";
+@import 'react-toastify/dist/ReactToastify.css';
 
 @import "layout";
 @import "example";
