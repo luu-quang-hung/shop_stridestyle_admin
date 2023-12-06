@@ -29,7 +29,8 @@ const PropertyComponent = () => {
   const [property, setProperty] = useState([]);
   const [propertySearch, setPropertySearch] = useState({
     page: 0,
-    size: 10
+    size: 10,
+    name: null
   });
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -40,7 +41,9 @@ const PropertyComponent = () => {
   const [sizeProduct, setSizeProduct] = useState([]);
   const [sizeProductSearch, setSizeProductSearch] = useState({
     page: 0,
-    size: 10
+    size: 10,
+    name: null
+
   });
 
   const [showModalCreatePro, setShowModalCreatePro] = useState(false);
@@ -57,7 +60,7 @@ const PropertyComponent = () => {
   });
 
   const [updateProperty, setUpdateProperty] = useState({
-    id: null,
+    idProperty: null,
     name: null
   });
   const [updateSize, setUpdateSize] = useState({
@@ -82,7 +85,7 @@ const PropertyComponent = () => {
   }
 
   const getAllSizeProduct = () => {
-    propertyService.findAllSize(propertySearch)
+    propertyService.findAllSize(sizeProductSearch)
       .then(res => {
         setSizeProduct(res.data.content)
         setTotalPages(res.data.totalPages);
@@ -274,6 +277,11 @@ const PropertyComponent = () => {
     setShowModalUpdatePro(true);
   };
 
+  const handleChangeUpdate = (event) => {
+    const { name, value } = event.target;
+    setUpdateProperty((prevInfo) => ({ ...prevInfo, [name]: value }));
+  }
+
   const confirmUpdatePro = () => {
     propertyService.updateProperty(updateProperty)
       .then(res => {
@@ -302,6 +310,12 @@ const PropertyComponent = () => {
     setShowModalUpdateSize(true);
   };
 
+
+  const handleChangeUpdateSize = (event) => {
+    const { name, value } = event.target;
+    setUpdateSize((prevInfo) => ({ ...prevInfo, [name]: value }));
+  }
+
   const confirmUpdateSize = () => {
     propertyService.updateSize(updateSize)
       .then(res => {
@@ -324,12 +338,14 @@ const PropertyComponent = () => {
   const cancelUpdateSize = () => {
     setShowModalUpdateSize(false)
   };
+
+  
+
   return (
     <CContainer>
       <ToastContainer position="top-right"></ToastContainer>
       <CRow>
         <CCol md="6">
-
           <CCard >
             <CCardBody>
               <h3>Màu sắc</h3>
@@ -525,8 +541,8 @@ const PropertyComponent = () => {
                   <FormControl
                     type="text"
                     placeholder="Enter ID"
-                    value={updateProperty.id || ''} disabled
-                    // onChange={}
+                    value={updateProperty.idProperty || ''} disabled
+                    onChange={handleChangeUpdate}
                   />
                 </Form.Group>
                 <Form.Group controlId="formName" className='mb-3'>
@@ -534,30 +550,55 @@ const PropertyComponent = () => {
                   <FormControl
                     type="text"
                     name="name"
-                    value={trademarkToUpdate.name}
+                    value={updateProperty.name}
                     onChange={handleChangeUpdate}
                     placeholder="Enter name"
                   />
                 </Form.Group>
-                <CFormSelect
-                  name="gender"
-                  label="Giới tính"
-                  onChange={handleChangeUpdate}
-                  value={trademarkToUpdate.gender}
-                  options={[
-                    { label: 'Nam', value: false },
-                    { label: 'Nữ', value: true },
-
-                  ]}
-                />
               </Form>
-
             </Modal.Body>
             <Modal.Footer>
-              <Button variant="secondary" onClick={cancelUpdateTrademark}>
+              <Button variant="secondary" onClick={cancelUpdatePro}>
                 Hủy
               </Button>
-              <Button variant="primary" onClick={confirmUpdateTrademark}>
+              <Button variant="primary" onClick={confirmUpdatePro}>
+                Lưu thay đổi
+              </Button>
+            </Modal.Footer>
+          </Modal>
+
+          <Modal show={showModalUpdateSize} onHide={cancelUpdateSize}>
+            <Modal.Header >
+              <Modal.Title>Cập nhật màu sắc</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <Form>
+                <Form.Group controlId="formId">
+                  <Form.Label>ID</Form.Label>
+                  <FormControl
+                    type="text"
+                    placeholder="Enter ID"
+                    value={updateSize.id || ''} disabled
+                    onChange={handleChangeUpdateSize}
+                  />
+                </Form.Group>
+                <Form.Group controlId="formName" className='mb-3'>
+                  <Form.Label>Tên danh mục</Form.Label>
+                  <FormControl
+                    type="text"
+                    name="name"
+                    value={updateSize.name}
+                    onChange={handleChangeUpdateSize}
+                    placeholder="Enter name"
+                  />
+                </Form.Group>
+              </Form>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" onClick={cancelUpdateSize}>
+                Hủy
+              </Button>
+              <Button variant="primary" onClick={confirmUpdateSize}>
                 Lưu thay đổi
               </Button>
             </Modal.Footer>

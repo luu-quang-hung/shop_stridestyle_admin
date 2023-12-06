@@ -40,6 +40,29 @@ const EvenComponent = () => {
     size: 10
   });
 
+
+  const [showModalCreateEven, setShowModalCreateEven] = useState(false);
+  const [showModalCreateVoucher, setShowModalCreateVoucher] = useState(false);
+
+  const [showModalUpdateEven, setShowModalUpdateEven] = useState(false);
+  const [showModalUpdateVoucher, setShowModalUpdateVoucher] = useState(false);
+
+  const [createEvent, setCreateEvent] = useState({
+    name: null
+  });
+  const [createSize, setCreateSize] = useState({
+    name: null
+  });
+
+  const [updateEvent, setUpdateEvent] = useState({
+    idProperty: null,
+    name: null
+  });
+  const [updateSize, setUpdateSize] = useState({
+    id: null,
+    name: null
+  });
+
   useEffect(() => {
     getAllEvent();
     getAllVoucher();
@@ -78,6 +101,23 @@ const EvenComponent = () => {
     setVoucherSearch({ ...voucherSearch, page: page - 1 })
     setCurrentPageSize(page)
   };
+
+  const handleAddEvent = () => {
+    setShowModalCreateEven(true);
+  };
+
+  const handleAddVoucher = () => {
+    setShowModalCreateVoucher(true);
+  };
+
+  const cancelAddEvent = () => {
+    setShowModalCreateEven(false);
+  };
+
+  const cancelAddVoucher = () => {
+    setShowModalCreateVoucher(false);
+  };
+
   return (
     <CContainer>
       <CRow>
@@ -96,7 +136,6 @@ const EvenComponent = () => {
                   type="text"
                   id="name"
                   placeholder="Tìm kiếm tên Sự Kiện"
-                  onChange={(e) => handleInputChange('name', e.target.value)}
                 />
               </CCol>
             </CForm>
