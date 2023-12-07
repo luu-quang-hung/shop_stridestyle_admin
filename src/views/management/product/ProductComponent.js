@@ -282,26 +282,25 @@ const ProductComponent = () => {
   const handleSubmitUpdate = () => {
     console.log(productToUpdate);
     // if (validateFormUpdate()) {
-      const formData = new FormData();
-      for (const key in productToUpdate) {
-        formData.append(key, productToUpdate[key]);
-      }
-      productService.createProduct(formData)
-        .then((res) => {
-          console.log(res);
-          toast.success("Tạo sản phẩm thành công", {
-            position: "top-right",
-            autoClose: 1000
-          })
-          setShowUpdateModal(false);
-        }).catch(err => {
-          toast.error("Tạo sản phẩm thất bại", {
-            position: "top-right",
-            autoClose: 1000
-          })
-
-          console.log(err);
+    const formData = new FormData();
+    for (const key in productToUpdate) {
+      formData.append(key, productToUpdate[key]);
+    }
+    productService.createProduct(formData)
+      .then((res) => {
+        console.log(res);
+        toast.success("Cập nhật sản phẩm thành công", {
+          position: "top-right",
+          autoClose: 1000
         })
+        setShowUpdateModal(false);
+      }).catch(err => {
+        toast.error("Cập nhật sản phẩm thất bại", {
+          position: "top-right",
+          autoClose: 1000
+        })
+        console.log(err);
+      })
     // }
   };
 
@@ -452,7 +451,7 @@ const ProductComponent = () => {
                   <th>Ngày tạo</th>
                   <th>Trạng thái</th>
                   <th>Mô tả</th>
-                  <th>Mô tả chi tiết</th> 
+                  <th>Mô tả chi tiết</th>
                   <th>Chức năng</th>
                 </tr>
               </thead>
@@ -767,25 +766,25 @@ const ProductComponent = () => {
                     </Form.Group>
                   </CCol>
                   <CCol md={6}>
-                      <Form.Group controlId="formTrademark">
-                        <Form.Label>Danh mục</Form.Label>
-                        <Form.Control
-                          as="select"
-                          name="idCategory"
-                          // value={(productToUpdate.categoryEntity && productToUpdate.categoryEntity.id) ?? ""}
-                          onChange={handleChangeUpdate}
-                        >
-                          <option value={""}>Chọn danh mục</option>
-                          {trademarks.map((item) => (
-                            <option key={item.id} value={item.id}>
-                              {item.nameCategory}
-                            </option>
-                          ))}
-                          {errors.idCategory && <div className="error-message">{errors.idCategory}</div>}
+                    <Form.Group controlId="formTrademark">
+                      <Form.Label>Danh mục</Form.Label>
+                      <Form.Control
+                        as="select"
+                        name="idCategory"
+                        // value={(productToUpdate.categoryEntity && productToUpdate.categoryEntity.id) ?? ""}
+                        onChange={handleChangeUpdate}
+                      >
+                        <option value={""}>Chọn danh mục</option>
+                        {trademarks.map((item) => (
+                          <option key={item.id} value={item.id}>
+                            {item.nameCategory}
+                          </option>
+                        ))}
+                        {errors.idCategory && <div className="error-message">{errors.idCategory}</div>}
 
-                        </Form.Control>
-                      </Form.Group>
-                    </CCol>
+                      </Form.Control>
+                    </Form.Group>
+                  </CCol>
                   <CCol md={6}>
                     <Form.Group controlId="formQuantity">
                       <Form.Label>Trạng thái</Form.Label>
@@ -808,7 +807,7 @@ const ProductComponent = () => {
                         onChange={handleChangeUpdate} />
                       {errors.imagePreview && <div className="error-message">{errors.imagePreview}</div>}
                     </Form.Group>
-                    <ImagePreviews imageURL={productToUpdate.imagePreview } />
+                    <ImagePreviews imageURL={productToUpdate.imagePreview} />
                   </CCol>
                   <CCol md={6}>
                     <Form.Group controlId="formImage">
@@ -857,7 +856,7 @@ const ProductComponent = () => {
                 Hủy
               </Button>
               <Button variant="primary" onClick={handleSubmitUpdate}>
-               Cập nhật
+                Cập nhật
               </Button>
             </Modal.Footer>
           </Modal>
