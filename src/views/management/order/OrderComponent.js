@@ -304,9 +304,9 @@ const OrderComponent = () => {
                     <td>{orders.address}</td>
                     <td>{orders.fullName}</td>
                     <td>
-                      {orders.payment === 1 && 'COD'}
-                      {orders.payment === 2 && 'VNPAY'}
-                      {orders.payment === 3 && 'Banking'}
+                      {orders.payment === 0 && 'COD'}
+                      {orders.payment === 1 && 'VNPAY'}
+                      {orders.payment === 2 && 'Banking'}
                     </td>                    <td>{orders.createAt}</td>
                     <td>{formatter.formatVND(orders.downTotal)}</td>
                   </tr>
@@ -350,9 +350,10 @@ const OrderComponent = () => {
               <CFormInput className='inputDetail' label="Mã hóa đơn: " value={orderDetail.id || null} readOnly></CFormInput>
             </CCol>
             <CCol md={3} className='mb-3'>
-              <CFormInput className='inputDetail' label="Phương thức thanh toán: " value={orderDetail.payment === 1 ? 'COD' :
-                orderDetail.payment === 2 ? 'VNPAY' :
-                  orderDetail.payment === 3 ? 'Banking' :
+              <CFormInput className='inputDetail' label="Phương thức thanh toán: " 
+              value={orderDetail.payment === 0 ? 'COD' :
+                orderDetail.payment === 1 ? 'VNPAY' :
+                  orderDetail.payment === 2 ? 'Banking' :
                     'Unknown'} readOnly></CFormInput>
             </CCol>
             <CCol md={3} className='mb-3'>
