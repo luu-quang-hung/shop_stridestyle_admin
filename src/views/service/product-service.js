@@ -29,6 +29,10 @@ class ProductService {
     return axios.post(API_URL_DETAIL + 'find-list-product', json, { headers: authHeader() });
   }
 
+  quantityProduct(payload) {
+    return axios.post(API_URL + "find-quantity-product", payload, {headers: authHeader()});
+  }
+
 }
 
 export default new ProductService();

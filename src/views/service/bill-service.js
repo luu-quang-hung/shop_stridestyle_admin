@@ -15,7 +15,10 @@ class BillService {
 
   updateBill(json){
     return axios.post(API_URL + `confirm-bill-manager`,json, { headers: authHeader() })
+  }
 
+  createBill(payload) {
+    return axios.post(API_URL + "create-bill-off", payload, {headers: authHeader()})
   }
 }
 
