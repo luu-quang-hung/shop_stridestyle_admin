@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useState } from 'react'
 import { ToastContainer, toast } from 'react-toastify';
 import {
     CButton,
@@ -14,12 +14,16 @@ import {
     CTableBody,
     CTableRow,
     CTableDataCell,
-    CFormTextarea
+    CFormTextarea,
+    CFormSelect,
+    CForm
 } from '@coreui/react'
-import { BsTrash } from "react-icons/bs";
+import { BsTrash, BsX } from "react-icons/bs";
 //Service import
 import productService from 'src/views/service/product-service';
-import { CardBody } from 'react-bootstrap';
+import { CardBody, CardHeader } from 'react-bootstrap';
+import billService from 'src/views/service/bill-service';
+import propertyService from 'src/views/service/property-service';
 
 const SaleCounterComponent = () => {
     const [searchOption, setSearchOption] = useState({
@@ -28,73 +32,194 @@ const SaleCounterComponent = () => {
     const [productList, setProductList] = useState([]);
     const [productFilter, setProductFilter] = useState([])
     const [categoryList, setCategoryList] = useState([])
+    const [propertyList, setPropertyList] = useState([])
+    const [sizeList, setSizeList] = useState([]);
     const [showFilter, setShowFilter] = useState(false);
+    const [validated, setValidated] = useState(false);
     const [invoice, setInvoice] = useState({
         totalPrice: 0,
         discount: 0,
         vat: '10%',
-        payment: 0,
-        description: null
+        total: 0,
+        note: null,
+        phoneNumber: null,
+        fullName: null,
+        orderDetailRequests: [
+
+        ]
     })
-    useEffect(() => {
-        getProductList()
+
+    useLayoutEffect(() => {
+        getListSize();
+        getProperty();
+        getProductList();
     }, [])
 
     function getProductList() {
         productService.findAllProduct({ size: 100, page: 0 }).then((res) => {
             const data = res.data.content.map(el => {
+                el.data = []
                 el.quantity = 1;
-                el.total  = el.price * 1;
-                el.count = 1;
-                el.color = 'Đen';
-                el.size = 40;
+                el.total = el.price * 1;
+                el.color = 1;
+                el.size = 1;
                 return el;
             });
-            setProductList(data);
+            const arr = [], categoryListF = []
+            data.forEach(el => {
+                if (arr.includes(el.categoryEntity.id)) return;
+                arr.push(el.categoryEntity.id);
+                categoryListF.push({
+                    id: el.categoryEntity.id,
+                    name: el.categoryEntity.name
+                })
+            });
+            const dataByCategory = categoryListF.map(el => {
+                return {
+                    title: el.name,
+                    data: data.filter(cate => cate.categoryEntity.id == el.id)
+                }
+            })
+            setProductList(dataByCategory);
         }).catch(() => { })
     }
 
     function filterProduct(e) {
         setProductFilter({ ...searchOption, query: e.target.value });
-        let listProductFilter = productList.filter(el => el.nameProduct.toLowerCase().includes(e.target.value));
+        const data = [];
+        productList.forEach(el => data.push(el))
+        data.forEach(el => {
+            el.dataFilter = el.data.filter(item => item.nameProduct.toLowerCase().includes(e.target.value));
+        });
         if (!e.target.value) {
             setProductFilter([]);
             setShowFilter(false);
         }
         else {
-            setProductFilter(listProductFilter);
+            setProductFilter(data);
             setShowFilter(true)
         };
     }
 
-    function addCategory(item) {
-        item.quantity = 1;
-        setCategoryList([...categoryList, item]);
+    async function addCategory(item) {
+        const object = { ...item }
+        object.quantity = 1;
+        object.count = 1;
+        await getQuantityProduct(object);
         toast.success("Thêm sản phẩm thành công!", {
             position: "top-right",
             autoClose: 1000
         });
+        console.log(object);
         invoice.totalPrice += item.total;
-        invoice.payment = invoice.totalPrice + invoice.totalPrice*0.1;
+        invoice.total = invoice.totalPrice + invoice.totalPrice * 0.1;
+        setCategoryList([...categoryList, object]);
     }
 
     function quantityProduct(item, count, index) {
         categoryList[index].count = count;
         categoryList[index].total = parseInt(count) * item.price;
         invoice.totalPrice = categoryList.reduce((partialSum, item) => partialSum + item.total, 0);
-        invoice.payment = invoice.totalPrice + invoice.totalPrice*0.1;
-        setInvoice({...invoice});
+        invoice.total = invoice.totalPrice + invoice.totalPrice * 0.1;
+        categoryList[index].inventoryCategory = item.inventory - count;
+        setInvoice({ ...invoice });
         setCategoryList([...categoryList]);
     }
 
-    function sizeProduct(item, size, index) {
-        categoryList[index].size = size;
+    function removeItem(index) {
+        categoryList.splice(index, 1);
         setCategoryList([...categoryList]);
+        invoice.totalPrice = categoryList.reduce((partialSum, item) => partialSum + item.total, 0);
+        invoice.total = invoice.totalPrice + invoice.totalPrice * 0.1;
+        setInvoice({ ...invoice });
+    }
+
+    function createBill(event) {
+        const form = event.currentTarget
+        console.log();
+        if (form.checkValidity() === false) {
+            event.preventDefault()
+            event.stopPropagation()
+        }
+        setValidated(true)
+        // invoice.orderDetailRequests = categoryList.map(el => {
+        //     let color = propertyList.find(pro => pro.value == el.color);
+        //     let size = sizeList.find(col => col.value == el.size);
+        //     return {
+        //         productId: el.id,
+        //         productName: el.nameProduct,
+        //         property: color?.label,
+        //         propertyId: color?.value,
+        //         size: size?.label,
+        //         sizeId: size?.value
+        //     }
+        // })
+        // invoice.downTotal = invoice.total;
+        // billService.createBill(invoice).then((res) => {
+        //     toast.success("Thêm sản phẩm thành công!", {
+        //         position: "top-right",
+        //         autoClose: 1000
+        //     });
+        // }).catch(() => {
+        //     toast.error("Thêm sản phẩm không thành công!", {
+        //         position: "top-right",
+        //         autoClose: 1000
+        //     });
+        // })
+    }
+
+    function getProperty() {
+        return new Promise((resolve, reject) => {
+            propertyService.findAllProperty({ page: 0, size: 100 }).then((res) => {
+                const data = res.data.content.map(el => {
+                    return {
+                        label: el.name,
+                        value: el.idProperty
+                    }
+                });
+                setPropertyList(data);
+                resolve(true)
+            }).catch(() => { reject(false) })
+        })
+    }
+
+    function getListSize() {
+        return new Promise((resolve, reject) => {
+            propertyService.findAllSize({ page: 0, size: 100 }).then((res) => {
+                const data = res.data.content.map(el => {
+                    return {
+                        label: el.name,
+                        value: el.id
+                    }
+                });
+                setSizeList(data);
+                resolve(true);
+            }).catch(() => { reject(false) })
+        })
+    }
+
+    function getQuantityProduct(item) {
+        return new Promise((resolve, reject) => {
+            const payload = {
+                idProduct: item.id,
+                idProperty: parseInt(item.color),
+                idSize: parseInt(item.size)
+            }
+            productService.quantityProduct(payload).then((res) => {
+                let quantity = res.data.data.quantity;
+                item.inventory = quantity;
+                item.inventoryCategory = quantity;
+                resolve(true);
+            }).catch(() => { reject(false) })
+        })
+    }
+    function sizeProduct(item, size, index, indexProduct) {
+        productFilter[indexProduct].dataFilter[index].size = size;
+        setProductFilter([...productFilter])
     }
 
     function colorProduct(item, color, index) {
-        categoryList[index].color = color;
-        setCategoryList([...categoryList]);
+        item.color = color;
     }
 
     function showFilterProduct() {
@@ -125,9 +250,10 @@ const SaleCounterComponent = () => {
                                             <CTableHead color='light'>
                                                 <CTableHeaderCell>STT</CTableHeaderCell>
                                                 <CTableHeaderCell>Tên</CTableHeaderCell>
-                                                <CTableHeaderCell>Kích cỡ</CTableHeaderCell>
+                                                <CTableHeaderCell>Size</CTableHeaderCell>
                                                 <CTableHeaderCell>Màu</CTableHeaderCell>
                                                 <CTableHeaderCell>Số lượng</CTableHeaderCell>
+                                                <CTableHeaderCell>Tồn kho</CTableHeaderCell>
                                                 <CTableHeaderCell>Giá</CTableHeaderCell>
                                                 <CTableHeaderCell>Tổng tiền</CTableHeaderCell>
                                             </CTableHead>
@@ -138,16 +264,18 @@ const SaleCounterComponent = () => {
                                                         <CTableRow key={index} >
                                                             <CTableDataCell>{index + 1}</CTableDataCell>
                                                             <CTableDataCell>{item.nameProduct}</CTableDataCell>
-                                                            <CTableDataCell><CFormInput type='number' min={1} defaultValue={item.size} value={item.size} onChange={(e) => sizeProduct(item, e.target.value, index)}></CFormInput></CTableDataCell>
-                                                            <CTableDataCell><CFormInput type='text' min={1} defaultValue={item.color} value={item.color} onChange={(e) => colorProduct(item, e.target.value, index)}></CFormInput></CTableDataCell>
+                                                            <CTableDataCell><CFormSelect disabled style={{ width: '70px' }} height={100} options={sizeList} defaultValue={item.size} value={item.size} ></CFormSelect></CTableDataCell>
+                                                            <CTableDataCell><CFormSelect disabled style={{ width: '100px' }} height={100} options={propertyList} defaultValue={item.color} value={item.color} ></CFormSelect></CTableDataCell>
                                                             <CTableDataCell><CFormInput type='number' min={1} defaultValue={item.quantity} value={item.count} onChange={(e) => quantityProduct(item, e.target.value, index)}></CFormInput></CTableDataCell>
+                                                            <CTableDataCell>
+                                                                <CFormInput type='number' min={0} value={item.inventoryCategory}></CFormInput>
+                                                            </CTableDataCell>
                                                             <CTableDataCell>{formatterCurrency(item.price)}</CTableDataCell>
                                                             <CTableDataCell>{formatterCurrency(item.total) || 0}</CTableDataCell>
-                                                            <CTableDataCell><BsTrash color='red' style={{cursor: 'pointer'}}></BsTrash></CTableDataCell>
+                                                            <CTableDataCell><BsTrash color='red' style={{ cursor: 'pointer' }} onClick={() => removeItem(index)}></BsTrash></CTableDataCell>
                                                         </CTableRow>
                                                     ))
                                                 }
-                                                
                                             </CTableBody>
                                         </CTable>
 
@@ -161,71 +289,98 @@ const SaleCounterComponent = () => {
                     <CCol md={3}>
                         <CCard>
                             <CCardBody>
-                                <CTable>
-                                    <CTableBody>
-                                        <CTableRow>
-                                            <CTableDataCell>Tổng tiền hàng:</CTableDataCell>
-                                            <CTableDataCell>{formatterCurrency(invoice.totalPrice) || 0}</CTableDataCell>
-                                        </CTableRow>
-                                        <CTableRow>
-                                            <CTableDataCell>Giảm giá</CTableDataCell>
-                                            <CTableDataCell>{invoice.discount}</CTableDataCell>
-                                        </CTableRow>
-                                        <CTableRow>
-                                            <CTableDataCell>VAT</CTableDataCell>
-                                            <CTableDataCell>{invoice.vat}</CTableDataCell>
-                                        </CTableRow>
-                                        <CTableRow>
-                                            <CTableDataCell>Khách cần trả</CTableDataCell>
-                                            <CTableDataCell>{formatterCurrency(invoice.payment)}</CTableDataCell>
-                                        </CTableRow>
-                                    </CTableBody>
-                                </CTable>
-                                <div className='description' style={{marginBottom: '20px'}}>
-                                    <CFormTextarea label="Ghi chú" style={{width: '100vw !important'}}></CFormTextarea>
-                                </div>
-                                <div className='d-flex'>
-                                    <CButton style={{marginLeft: 'auto', marginRight: '10px'}}>In</CButton>
-                                    <CButton color='success'>Thanh toán</CButton>
-                                </div>
+                                <CForm className='needs-validation' onSubmit={createBill}   validated={validated}>
+                                    <label>Tên khách hàng</label>
+                                    <CFormInput tooltipFeedback required feedbackInvalid="Tên khách hàng là trường bắt buộc" type='text' value={invoice.fullName} onChange={(e) => setInvoice({ ...invoice, fullName: e.target.value })}></CFormInput>
+
+                                    <label className='mt-2'>Số điện thoại</label>
+                                    <CFormInput tooltipFeedback required feedbackInvalid="Số điện thoại là trường bắt buộc" type='number' className='' min={0} value={invoice.phoneNumber} onChange={(e) => setInvoice({ ...invoice, phoneNumber: e.target.value })}></CFormInput>
+                                    <CTable className='mt-2'>
+                                        <CTableBody>
+                                            <CTableRow>
+                                                <CTableDataCell>Tổng tiền hàng:</CTableDataCell>
+                                                <CTableDataCell>{formatterCurrency(invoice.totalPrice) || 0}</CTableDataCell>
+                                            </CTableRow>
+                                            <CTableRow>
+                                                <CTableDataCell>Giảm giá</CTableDataCell>
+                                                <CTableDataCell>{invoice.discount}</CTableDataCell>
+                                            </CTableRow>
+                                            <CTableRow>
+                                                <CTableDataCell>VAT</CTableDataCell>
+                                                <CTableDataCell>{invoice.vat}</CTableDataCell>
+                                            </CTableRow>
+                                            <CTableRow>
+                                                <CTableDataCell>Khách cần trả</CTableDataCell>
+                                                <CTableDataCell>{formatterCurrency(invoice.total)}</CTableDataCell>
+                                            </CTableRow>
+                                        </CTableBody>
+                                    </CTable>
+                                    <div className='note' style={{ marginBottom: '20px' }}>
+                                        <CFormTextarea label="Ghi chú" style={{ width: '100vw !important' }} value={invoice.note} onChange={(e) => setInvoice({ ...invoice, note: e.target.value })}></CFormTextarea>
+                                    </div>
+                                    <div className='d-flex'>
+                                        <CButton style={{ marginLeft: 'auto', marginRight: '10px' }}>In</CButton>
+                                        <CButton disabled={categoryList.length == 0} color='success' style={{ color: '#fff' }} type='submit'>Thanh toán</CButton>
+                                    </div>
+                                </CForm>
                             </CCardBody>
                         </CCard>
                     </CCol>
                 </CRow>
-                <div style={{position: 'absolute', top: '27%', width: '70%'}}>
+                <div style={{ position: 'absolute', top: '27%', width: '70%' }}>
                     {
                         showFilter &&
                         <div style={{ marginTop: '10px' }}>
                             <CCard>
-                                <CardBody>
-                                    <CRow>
-                                        <label style={{fontWeight: 'bold'}}>Danh mục sản phẩm</label>
-                                        <CCol md={12} style={{ marginTop: '20px', maxHeight: '400px', overflowY: 'scroll', overflowX: 'hidden' }}>
-                                            <CRow>
-                                                {
-                                                    productFilter.map((item, index) => (
-                                                        <CCol md={4} style={{ cursor: 'pointer' }} onClick={() => addCategory(item)}>
-                                                            <div style={{ backgroundColor: index % 2 == 0 ? '#3c4b64' : '#3c4b644d', marginBottom: '20px' }}>
-                                                                <CRow>
-                                                                    <CCol md={5}>
-                                                                        <CImage src={item.image} width={80} height={100}></CImage>
-                                                                    </CCol>
-                                                                    <CCol md={7} style={{ padding: '5px' }}>
-                                                                        <div className='name-product'>
-                                                                            <label style={{ fontWeight: 'bold', color: 'white' }}>{item.nameProduct}</label>
-                                                                        </div>
-                                                                        <div className='price'>
-                                                                            <span style={{ fontWeight: 'bold', color: '#c91010' }}>{formatterCurrency(item.price)}</span>
-                                                                        </div>
-                                                                    </CCol>
-                                                                </CRow>
-                                                            </div>
-                                                        </CCol>
-                                                    ))
-                                                }
+                                <CardHeader>
+                                    <BsX size={20} style={{float: 'right', cursor: 'pointer', fontWeight: 'bold'}} onClick={showFilterProduct}></BsX>
+                                </CardHeader>
+                                <CardBody style={{ overflowY: 'scroll', overflowX: 'hidden', maxHeight: '400px' }}>
+                                    {
+                                        productFilter.map((el, indexProduct) => (
+                                            <CRow key={indexProduct}>
+                                                <label style={{ fontWeight: 'bold' }}>{el.dataFilter && el.dataFilter.length > 0 ? el.title : ''}</label>
+                                                <CCol md={12} style={{ marginTop: '20px' }}>
+                                                    <CRow>
+                                                        {
+                                                            el.dataFilter.map((item, index) => (
+                                                                <CCol md={4} style={{ cursor: 'pointer' }}>
+                                                                    <div style={{ backgroundColor: index % 2 == 0 ? '#3c4b64' : '#3c4b644d', marginBottom: '20px' }}>
+                                                                        <CRow>
+                                                                            <CCol md={5}>
+                                                                                <CImage src={item.image} width={120} height={'100%'}></CImage>
+                                                                            </CCol>
+                                                                            <CCol md={7} style={{ padding: '5px', color: 'white' }}>
+                                                                                <div className='name-product'>
+                                                                                    <label style={{ fontWeight: 'bold', color: 'white' }}>{item.nameProduct}</label>
+                                                                                </div>
+                                                                                <div className='price'>
+                                                                                    <span style={{ fontWeight: 'bold', color: '#c91010' }}>{formatterCurrency(item.price)}</span>
+                                                                                </div>
+                                                                                <CRow className='property'>
+                                                                                    <CCol md={5}>
+                                                                                        <CFormSelect label="Size" style={{ width: '70px' }} height={100} options={sizeList} onChange={(e) => sizeProduct(item, e.target.value, index, indexProduct)} defaultValue={sizeList[1].value} value={item.size} ></CFormSelect>
+                                                                                    </CCol>
+                                                                                    <CCol md={7}>
+                                                                                        <CFormSelect label="Màu" style={{ width: '80px' }} options={propertyList} onChange={(e) => colorProduct(item, e.target.value, index)} defaultValue={propertyList[1].value || 0} value={item.color}></CFormSelect>
+                                                                                    </CCol>
+                                                                                </CRow>
+                                                                                <CRow className='mt-2'>
+                                                                                    <CCol>
+                                                                                        <CButton style={{ width: '90%', margin: 'auto' }} color='danger' onClick={() => addCategory(item)}>Thêm</CButton>
+                                                                                    </CCol>
+                                                                                </CRow>
+                                                                            </CCol>
+                                                                        </CRow>
+                                                                    </div>
+                                                                </CCol>
+                                                            ))
+                                                        }
+                                                    </CRow>
+                                                </CCol>
                                             </CRow>
-                                        </CCol>
-                                    </CRow>
+                                        ))
+                                    }
                                 </CardBody>
                             </CCard>
                         </div>
