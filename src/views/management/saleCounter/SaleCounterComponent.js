@@ -36,6 +36,7 @@ const SaleCounterComponent = () => {
     const [sizeList, setSizeList] = useState([]);
     const [showFilter, setShowFilter] = useState(false);
     const [validated, setValidated] = useState(false);
+    const [validPhone, setValidPhone] = useState(false);
     const [invoice, setInvoice] = useState({
         totalPrice: 0,
         discount: 0,
@@ -102,6 +103,13 @@ const SaleCounterComponent = () => {
     }
 
     async function addCategory(item) {
+        const product = categoryList.find(el => el.id == item.id && item.size == el.size && item.color == el.color);
+        if (product) {
+            return toast.error(`Sản phẩm ${item.nameProduct} đã được thêm, vui lòng chọn sản phẩm khác`, {
+                position: 'top-right',
+                autoClose: 1000
+            })
+        }
         const object = { ...item }
         object.quantity = 1;
         object.count = 1;
@@ -110,7 +118,6 @@ const SaleCounterComponent = () => {
             position: "top-right",
             autoClose: 1000
         });
-        console.log(object);
         invoice.totalPrice += item.total;
         invoice.total = invoice.totalPrice + invoice.totalPrice * 0.1;
         setCategoryList([...categoryList, object]);
@@ -122,8 +129,14 @@ const SaleCounterComponent = () => {
         invoice.totalPrice = categoryList.reduce((partialSum, item) => partialSum + item.total, 0);
         invoice.total = invoice.totalPrice + invoice.totalPrice * 0.1;
         categoryList[index].inventoryCategory = item.inventory - count;
-        setInvoice({ ...invoice });
+        if (item.inventoryCategory < 0) {
+            return toast.error(`Sản phẩm ${item.nameProduct} vượt quá số lượng`, {
+                position: 'top-right',
+                autoClose: 1000
+            })
+        }
         setCategoryList([...categoryList]);
+        setInvoice({ ...invoice });
     }
 
     function removeItem(index) {
@@ -134,38 +147,45 @@ const SaleCounterComponent = () => {
         setInvoice({ ...invoice });
     }
 
+    function regexPhoneNumber(phone) {
+        const regexPhoneNumber = /(84|0[3|5|7|8|9])+([0-9]{8})\b/g;
+    
+        return phone.match(regexPhoneNumber) ? true : false;
+    }
     function createBill(event) {
-        const form = event.currentTarget
-        console.log();
+        const form = event.currentTarget;
         if (form.checkValidity() === false) {
             event.preventDefault()
-            event.stopPropagation()
+            event.stopPropagation();
+            setValidated(true);
+            return;
         }
-        setValidated(true)
-        // invoice.orderDetailRequests = categoryList.map(el => {
-        //     let color = propertyList.find(pro => pro.value == el.color);
-        //     let size = sizeList.find(col => col.value == el.size);
-        //     return {
-        //         productId: el.id,
-        //         productName: el.nameProduct,
-        //         property: color?.label,
-        //         propertyId: color?.value,
-        //         size: size?.label,
-        //         sizeId: size?.value
-        //     }
-        // })
-        // invoice.downTotal = invoice.total;
-        // billService.createBill(invoice).then((res) => {
-        //     toast.success("Thêm sản phẩm thành công!", {
-        //         position: "top-right",
-        //         autoClose: 1000
-        //     });
-        // }).catch(() => {
-        //     toast.error("Thêm sản phẩm không thành công!", {
-        //         position: "top-right",
-        //         autoClose: 1000
-        //     });
-        // })
+        setValidated(true);
+        invoice.orderDetailRequests = categoryList.map(el => {
+            let color = propertyList.find(pro => pro.value == el.color);
+            let size = sizeList.find(col => col.value == el.size);
+            return {
+                productId: el.id,
+                productName: el.nameProduct,
+                property: color?.label,
+                propertyId: color?.value,
+                size: size?.label,
+                sizeId: size?.value,
+                quantity: el.count
+            }
+        })
+        invoice.downTotal = invoice.total;
+        billService.createBill(invoice).then((res) => {
+            toast.success("Thêm sản phẩm thành công!", {
+                position: "top-right",
+                autoClose: 1000
+            });
+        }).catch(() => {
+            toast.error("Thêm sản phẩm không thành công!", {
+                position: "top-right",
+                autoClose: 1000
+            });
+        })
     }
 
     function getProperty() {
@@ -206,10 +226,10 @@ const SaleCounterComponent = () => {
                 idSize: parseInt(item.size)
             }
             productService.quantityProduct(payload).then((res) => {
+                resolve(true);
                 let quantity = res.data.data.quantity;
                 item.inventory = quantity;
                 item.inventoryCategory = quantity;
-                resolve(true);
             }).catch(() => { reject(false) })
         })
     }
@@ -218,8 +238,9 @@ const SaleCounterComponent = () => {
         setProductFilter([...productFilter])
     }
 
-    function colorProduct(item, color, index) {
-        item.color = color;
+    function colorProduct(item, color, index, indexProduct) {
+        productFilter[indexProduct].dataFilter[index].color = color;
+        setProductFilter([...productFilter])
     }
 
     function showFilterProduct() {
@@ -228,6 +249,15 @@ const SaleCounterComponent = () => {
 
     function formatterCurrency(price) {
         return price.toLocaleString('it-IT', { style: 'currency', currency: 'VND' });
+    }
+    function handlePhoneNumber(e) {
+        setInvoice({ ...invoice, phoneNumber: e.target.value });
+        if (!regexPhoneNumber(e.target.value)) {
+            setValidPhone(true);
+            setValidated(false);
+        } else {
+            setValidPhone(false);
+        }
     }
     return (
         <>
@@ -289,12 +319,12 @@ const SaleCounterComponent = () => {
                     <CCol md={3}>
                         <CCard>
                             <CCardBody>
-                                <CForm className='needs-validation' onSubmit={createBill}   validated={validated}>
+                                <CForm className='needs-validation' onSubmit={createBill} noValidate validated={validated}>
                                     <label>Tên khách hàng</label>
-                                    <CFormInput tooltipFeedback required feedbackInvalid="Tên khách hàng là trường bắt buộc" type='text' value={invoice.fullName} onChange={(e) => setInvoice({ ...invoice, fullName: e.target.value })}></CFormInput>
-
+                                    <CFormInput required feedbackInvalid="Tên khách hàng là trường bắt buộc" type='text' value={invoice.fullName} onChange={(e) => setInvoice({ ...invoice, fullName: e.target.value })}></CFormInput>
+                                                
                                     <label className='mt-2'>Số điện thoại</label>
-                                    <CFormInput tooltipFeedback required feedbackInvalid="Số điện thoại là trường bắt buộc" type='number' className='' min={0} value={invoice.phoneNumber} onChange={(e) => setInvoice({ ...invoice, phoneNumber: e.target.value })}></CFormInput>
+                                    <CFormInput invalid={validPhone} required feedbackInvalid="Số điện thoại không hợp lệ" type='number' className='' min={0} value={invoice.phoneNumber} onChange={(e) => handlePhoneNumber(e)}></CFormInput>
                                     <CTable className='mt-2'>
                                         <CTableBody>
                                             <CTableRow>
@@ -362,7 +392,7 @@ const SaleCounterComponent = () => {
                                                                                         <CFormSelect label="Size" style={{ width: '70px' }} height={100} options={sizeList} onChange={(e) => sizeProduct(item, e.target.value, index, indexProduct)} defaultValue={sizeList[1].value} value={item.size} ></CFormSelect>
                                                                                     </CCol>
                                                                                     <CCol md={7}>
-                                                                                        <CFormSelect label="Màu" style={{ width: '80px' }} options={propertyList} onChange={(e) => colorProduct(item, e.target.value, index)} defaultValue={propertyList[1].value || 0} value={item.color}></CFormSelect>
+                                                                                        <CFormSelect label="Màu" style={{ width: '80px' }} options={propertyList} onChange={(e) => colorProduct(item, e.target.value, index, indexProduct)} defaultValue={propertyList[1].value || 0} value={item.color}></CFormSelect>
                                                                                     </CCol>
                                                                                 </CRow>
                                                                                 <CRow className='mt-2'>
