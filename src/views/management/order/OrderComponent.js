@@ -300,7 +300,7 @@ const OrderComponent = () => {
 
                     </td>
                     <td>{orders.sdt}</td>
-                    <td>{orders.customerEntity.email || ""}</td>
+                    <td>{orders.customerEntity?.email || ""}</td>
                     <td>{orders.address}</td>
                     <td>{orders.fullName}</td>
                     <td>

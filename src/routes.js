@@ -10,6 +10,8 @@ const Customer = React.lazy(() => import('./views/management/customer/CustomerCo
 const Trademark = React.lazy(() => import('./views/management/category/CategoryComponent'))
 const Property = React.lazy(() => import('./views/management/property/PropertyComponent'))
 const Event =  React.lazy(() => import('./views/management/event/EventComponent'))
+const Invoice = React.lazy(() => import('./views/management/saleCounter/Invoice'))
+
 const routes = [
   { path: '/', exact: true, name: 'Trang chủ' },
   { path: '/dashboard', name: 'Thống kê', element: Dashboard },
@@ -23,8 +25,8 @@ const routes = [
   {path:'/management/customer',name: 'Khách hàng' , element: Customer},
   {path:'/management/trademark',name: 'Danh mục' , element: Trademark},
   {path:'/management/property',name: 'Màu sắc' , element: Property},
-  {path:'/management/event',name: 'Sự kiện' , element: Event}
-
+  {path:'/management/event',name: 'Sự kiện' , element: Event},
+  {path: '/management/invoice', name: 'Hóa đơn', element: Invoice}
 
 ]
 
