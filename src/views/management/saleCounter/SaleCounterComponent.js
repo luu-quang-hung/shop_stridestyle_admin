@@ -24,8 +24,10 @@ import productService from 'src/views/service/product-service';
 import { CardBody, CardHeader } from 'react-bootstrap';
 import billService from 'src/views/service/bill-service';
 import propertyService from 'src/views/service/property-service';
+import { useNavigate } from "react-router-dom";
 
 const SaleCounterComponent = () => {
+    const navigator = useNavigate();
     const [searchOption, setSearchOption] = useState({
         query: null
     });
@@ -180,6 +182,7 @@ const SaleCounterComponent = () => {
                 position: "top-right",
                 autoClose: 1000
             });
+            navigator(`/management/invoice?id=${res.data.data.id}`)
         }).catch(() => {
             toast.error("Thêm sản phẩm không thành công!", {
                 position: "top-right",
@@ -349,8 +352,7 @@ const SaleCounterComponent = () => {
                                         <CFormTextarea label="Ghi chú" style={{ width: '100vw !important' }} value={invoice.note} onChange={(e) => setInvoice({ ...invoice, note: e.target.value })}></CFormTextarea>
                                     </div>
                                     <div className='d-flex'>
-                                        <CButton style={{ marginLeft: 'auto', marginRight: '10px' }}>In</CButton>
-                                        <CButton disabled={categoryList.length == 0} color='success' style={{ color: '#fff' }} type='submit'>Thanh toán</CButton>
+                                        <CButton disabled={categoryList.length == 0} color='success' style={{ color: '#fff', marginLeft: 'auto' }} type='submit'>Thanh toán</CButton>
                                     </div>
                                 </CForm>
                             </CCardBody>

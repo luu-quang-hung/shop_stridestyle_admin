@@ -200,7 +200,7 @@ const OrderComponent = () => {
     },
   };
 
-  //search 
+  //search
   const handleInputChange = (field, value) => {
     const nullValue = value === 'null' ? null : value;
 
@@ -326,6 +326,7 @@ const OrderComponent = () => {
                     <td className="truncate" title={orders.address}>
                       {orders.address}
                     </td>
+
                     <td>{orders.fullName}</td>
                     <td>
                       {orders.payment === 0 && 'COD'}
