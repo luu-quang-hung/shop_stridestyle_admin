@@ -39,7 +39,9 @@ const OrderComponent = () => {
       size: 10,
       startDate: null,
       statusShipping: null,
-      payment: null
+      payment: null,
+      fullName: null,
+      salesStatus: null
     }
   );
   const [listBill, setListBill] = useState([]);
@@ -65,6 +67,13 @@ const OrderComponent = () => {
     { label: 'Hủy 🚫', value: 'HUY' }
   ];
 
+  const optionSearchSale = [
+    { label: 'Tất cả hình thức ', value: 'null' },
+    { label: 'Bán tại quầy ', value: false },
+    { label: 'Bán trực tuyến ', value: true },
+
+
+  ]
 
   const payment = [
     { label: 'Tất cả phương thức ', value: 'null' },
@@ -211,9 +220,9 @@ const OrderComponent = () => {
         <CCol md={2}>
           <CFormInput
             type="text"
-            id="nameCustomer"
+            id="fullName"
             placeholder="Tên khách hàng"
-            onChange={(e) => handleInputChange('email', e.target.value)}
+            onChange={(e) => handleInputChange('fullName', e.target.value)}
           />
         </CCol>
         <CCol md={2}>
@@ -238,7 +247,7 @@ const OrderComponent = () => {
             onChange={handleDateChange}
             showYearDropdown
             scrollableYearDropdown
-            dateFormat="dd/MM/yyyy" 
+            dateFormat="dd/MM/yyyy"
             isClearable
           />
         </CCol>
@@ -259,7 +268,16 @@ const OrderComponent = () => {
             onChange={(e) => handleInputChange('statusShipping', e.target.value)}
           />
         </CCol>
-        <CCol md={2}>
+        <CCol md={2} className='mb-3'>
+          <CFormSelect
+            type="text"
+            id="salesStatus"
+            placeholder="Hình thức bán hàng"
+            options={optionSearchSale}
+            onChange={(e) => handleInputChange('salesStatus', e.target.value)}
+          />
+        </CCol>
+        <CCol md={12} style={{textAlign:"end"}}>
           <CButton type="submit" className="mb-3" onClick={getOrderList}>
             Tìm Kiếm
           </CButton>
@@ -350,11 +368,11 @@ const OrderComponent = () => {
               <CFormInput className='inputDetail' label="Mã hóa đơn: " value={orderDetail.id || null} readOnly></CFormInput>
             </CCol>
             <CCol md={3} className='mb-3'>
-              <CFormInput className='inputDetail' label="Phương thức thanh toán: " 
-              value={orderDetail.payment === 0 ? 'COD' :
-                orderDetail.payment === 1 ? 'VNPAY' :
-                  orderDetail.payment === 2 ? 'Banking' :
-                    'Unknown'} readOnly></CFormInput>
+              <CFormInput className='inputDetail' label="Phương thức thanh toán: "
+                value={orderDetail.payment === 0 ? 'COD' :
+                  orderDetail.payment === 1 ? 'VNPAY' :
+                    orderDetail.payment === 2 ? 'Banking' :
+                      'Unknown'} readOnly></CFormInput>
             </CCol>
             <CCol md={3} className='mb-3'>
               <CFormInput className='inputDetail' label="Tên người nhận: " value={orderDetail.fullName || null} readOnly></CFormInput>
