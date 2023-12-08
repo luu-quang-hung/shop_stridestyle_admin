@@ -405,12 +405,11 @@ const ProductComponent = () => {
 
     return Object.keys(newErrors).length === 0;
   };
-  console.log(productToUpdate);
   return (
     <div class="container">
       <ToastContainer position="top-right"></ToastContainer>
       <CRow>
-        <CCol md={1}>
+        <CCol md={2}>
           <Button className="btn-loading" onClick={handleAddProduct}>
             Tạo mới
           </Button>
@@ -771,7 +770,7 @@ const ProductComponent = () => {
                       <Form.Control
                         as="select"
                         name="idCategory"
-                        // value={(productToUpdate.categoryEntity && productToUpdate.categoryEntity.id) ?? ""}
+                        value={(productToUpdate.categoryEntity && productToUpdate.categoryEntity.id) ?? ""}
                         onChange={handleChangeUpdate}
                       >
                         <option value={""}>Chọn danh mục</option>
@@ -797,7 +796,7 @@ const ProductComponent = () => {
                     </Form.Group>
                   </CCol>
 
-                  <CCol md={6}>
+                  {/* <CCol md={6}>
                     <Form.Group controlId="formImage">
                       <Form.Label>Ảnh chính</Form.Label>
                       <Form.Control
@@ -821,7 +820,7 @@ const ProductComponent = () => {
                       {errors.listImages && <div className="error-message">{errors.listImages}</div>}
                     </Form.Group>
                     <ImagePreviewList imageURLs={listImages} />
-                  </CCol>
+                  </CCol> */}
                   <Form.Group controlId="formDescription">
                     <Form.Label >Mô tả</Form.Label>
                     <Form.Control

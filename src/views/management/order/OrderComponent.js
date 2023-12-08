@@ -83,16 +83,20 @@ const OrderComponent = () => {
   ];
 
   if (selectedStatus === 'CHUA_XAC_NHAN' || selectedStatus === 'HUY') {
-    options.unshift({ label: 'Hủy 🚫', value: 'HUY', disabled: false });
+    options.push({ label: 'Hủy 🚫', value: 'HUY', disabled: false });
   }
 
   const currentIndex = options.findIndex(option => option.value === selectedStatus);
 
-  const updatedOptions = options.map((option, index) => ({
-    ...option,
-    disabled: selectedStatus === 'CHUA_XAC_NHAN' && index !== currentIndex && index !== currentIndex + 1
-  }));
-
+  if (selectedStatus === 'CHUA_XAC_NHAN') {
+    options.forEach((option, index) => {
+      option.disabled = index !== 4 && index !== currentIndex && index !== currentIndex + 1;
+    });
+  } else {
+    options.forEach((option, index) => {
+      option.disabled = index !== currentIndex && index !== currentIndex + 1;
+    });
+  }
 
   useEffect(() => {
     getOrderList();
@@ -277,7 +281,7 @@ const OrderComponent = () => {
             onChange={(e) => handleInputChange('salesStatus', e.target.value)}
           />
         </CCol>
-        <CCol md={12} style={{textAlign:"end"}}>
+        <CCol md={12} style={{ textAlign: "end" }}>
           <CButton type="submit" className="mb-3" onClick={getOrderList}>
             Tìm Kiếm
           </CButton>
@@ -320,7 +324,7 @@ const OrderComponent = () => {
                     <td>{orders.sdt}</td>
                     <td>{orders.customerEntity.email || ""}</td>
                     <td className="truncate" title={orders.address}>
-                    {orders.address}
+                      {orders.address}
                     </td>
                     <td>{orders.fullName}</td>
                     <td>
@@ -362,7 +366,7 @@ const OrderComponent = () => {
                   aria-label="Trạng thái"
                   value={selectedStatus}
                   onChange={handleStatusChange}
-                  options={updatedOptions}
+                  options={options}
                 />
               </CCol>
             </CCol>
