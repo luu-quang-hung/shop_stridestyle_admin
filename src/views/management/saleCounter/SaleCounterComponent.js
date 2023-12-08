@@ -124,17 +124,17 @@ const SaleCounterComponent = () => {
     }
 
     function quantityProduct(item, count, index) {
-        categoryList[index].count = count;
-        categoryList[index].total = parseInt(count) * item.price;
-        invoice.totalPrice = categoryList.reduce((partialSum, item) => partialSum + item.total, 0);
-        invoice.total = invoice.totalPrice + invoice.totalPrice * 0.1;
-        categoryList[index].inventoryCategory = item.inventory - count;
-        if (item.inventoryCategory < 0) {
+        if (item.inventory < count) {
             return toast.error(`Sản phẩm ${item.nameProduct} vượt quá số lượng`, {
                 position: 'top-right',
                 autoClose: 1000
             })
         }
+        categoryList[index].count = count;
+        categoryList[index].total = parseInt(count) * item.price;
+        invoice.totalPrice = categoryList.reduce((partialSum, item) => partialSum + item.total, 0);
+        invoice.total = invoice.totalPrice + invoice.totalPrice * 0.1;
+        if (categoryList[index].inventoryCategory != 0) categoryList[index].inventoryCategory = item.inventory - count;
         setCategoryList([...categoryList]);
         setInvoice({ ...invoice });
     }
@@ -229,7 +229,7 @@ const SaleCounterComponent = () => {
                 resolve(true);
                 let quantity = res.data.data.quantity;
                 item.inventory = quantity;
-                item.inventoryCategory = quantity;
+                item.inventoryCategory = quantity -1;
             }).catch(() => { reject(false) })
         })
     }
