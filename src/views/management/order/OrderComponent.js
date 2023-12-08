@@ -77,20 +77,20 @@ const OrderComponent = () => {
 
   const payment = [
     { label: 'Tất cả phương thức ', value: 'null' },
-    { label: 'COD', value: 1 },
-    { label: 'VNPAY', value: 2 },
+    { label: 'COD', value: 0 },
+    { label: 'VNPAY', value: 1 },
     { label: 'Banking', value: 2 },
   ];
 
   if (selectedStatus === 'CHUA_XAC_NHAN' || selectedStatus === 'HUY') {
-    options.push({ label: 'Hủy 🚫', value: 'HUY', disabled: false });
+    options.unshift({ label: 'Hủy 🚫', value: 'HUY', disabled: false });
   }
 
   const currentIndex = options.findIndex(option => option.value === selectedStatus);
 
   const updatedOptions = options.map((option, index) => ({
     ...option,
-    disabled: index !== currentIndex && index !== currentIndex + 1
+    disabled: selectedStatus === 'CHUA_XAC_NHAN' && index !== currentIndex && index !== currentIndex + 1
   }));
 
 
@@ -295,7 +295,7 @@ const OrderComponent = () => {
                   <th>Email</th>
                   <th>Địa chỉ</th>
                   <th>Họ Và Tên</th>
-                  <th>Phương thức thanh toán</th>
+                  <th>Phương thức TT</th>
                   <th>Ngày đặt hàng</th>
                   <th>Tổng tiền</th>
                 </tr>
@@ -319,7 +319,9 @@ const OrderComponent = () => {
                     </td>
                     <td>{orders.sdt}</td>
                     <td>{orders.customerEntity.email || ""}</td>
-                    <td>{orders.address}</td>
+                    <td className="truncate" title={orders.address}>
+                    {orders.address}
+                    </td>
                     <td>{orders.fullName}</td>
                     <td>
                       {orders.payment === 0 && 'COD'}
