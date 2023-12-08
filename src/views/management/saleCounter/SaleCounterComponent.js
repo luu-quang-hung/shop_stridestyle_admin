@@ -151,7 +151,7 @@ const SaleCounterComponent = () => {
 
     function regexPhoneNumber(phone) {
         const regexPhoneNumber = /(84|0[3|5|7|8|9])+([0-9]{8})\b/g;
-    
+
         return phone.match(regexPhoneNumber) ? true : false;
     }
     function createBill(event) {
@@ -178,11 +178,19 @@ const SaleCounterComponent = () => {
         })
         invoice.downTotal = invoice.total;
         billService.createBill(invoice).then((res) => {
+            console.log(res);
+            if (res.data.ecode  === "420" ) {
+                return toast.error("Số Lượng Sản Phẩm trên bill Lớn hơn số hàng tồn trong kho" , {
+                    position: "top-right",
+                    autoClose: 1000
+                }); 
+            }
             toast.success("Thêm sản phẩm thành công!", {
                 position: "top-right",
                 autoClose: 1000
             });
             navigator(`/management/invoice?id=${res.data.data.id}`)
+            return
         }).catch(() => {
             toast.error("Thêm sản phẩm không thành công!", {
                 position: "top-right",
@@ -232,7 +240,7 @@ const SaleCounterComponent = () => {
                 resolve(true);
                 let quantity = res.data.data.quantity;
                 item.inventory = quantity;
-                item.inventoryCategory = quantity -1;
+                item.inventoryCategory = quantity > 0 ? quantity - 1 : 0;
             }).catch(() => { reject(false) })
         })
     }
@@ -325,7 +333,7 @@ const SaleCounterComponent = () => {
                                 <CForm className='needs-validation' onSubmit={createBill} noValidate validated={validated}>
                                     <label>Tên khách hàng</label>
                                     <CFormInput required feedbackInvalid="Tên khách hàng là trường bắt buộc" type='text' value={invoice.fullName} onChange={(e) => setInvoice({ ...invoice, fullName: e.target.value })}></CFormInput>
-                                                
+
                                     <label className='mt-2'>Số điện thoại</label>
                                     <CFormInput invalid={validPhone} required feedbackInvalid="Số điện thoại không hợp lệ" type='number' className='' min={0} value={invoice.phoneNumber} onChange={(e) => handlePhoneNumber(e)}></CFormInput>
                                     <CTable className='mt-2'>
@@ -365,7 +373,7 @@ const SaleCounterComponent = () => {
                         <div style={{ marginTop: '10px' }}>
                             <CCard>
                                 <CardHeader>
-                                    <BsX size={20} style={{float: 'right', cursor: 'pointer', fontWeight: 'bold'}} onClick={showFilterProduct}></BsX>
+                                    <BsX size={20} style={{ float: 'right', cursor: 'pointer', fontWeight: 'bold' }} onClick={showFilterProduct}></BsX>
                                 </CardHeader>
                                 <CardBody style={{ overflowY: 'scroll', overflowX: 'hidden', maxHeight: '400px' }}>
                                     {
