@@ -111,6 +111,9 @@ const OrderComponent = () => {
         setTotalPages(res.data.data.totalPages);
       })
       .catch(err => {
+        if (err.response.status === 401) {
+          navigate("/login")
+        }
         console.error('Error fetching order:', err);
       })
   }

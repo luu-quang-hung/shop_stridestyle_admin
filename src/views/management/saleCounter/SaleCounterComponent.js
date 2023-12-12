@@ -84,7 +84,11 @@ const SaleCounterComponent = () => {
                 }
             })
             setProductList(dataByCategory);
-        }).catch(() => { })
+        }).catch(() => { 
+            if (err.response.status === 401) {
+                navigate("/login")
+              }
+        })
     }
 
     function filterProduct(e) {

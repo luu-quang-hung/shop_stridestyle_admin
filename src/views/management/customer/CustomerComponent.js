@@ -41,6 +41,9 @@ const CustomerComponent = () => {
         console.log(res.data.content);
       })
       .catch(err => {
+        if (err.response.status === 401) {
+          navigate("/login")
+        }
         console.error('Error fetching Customer:', err);
       })
   }
