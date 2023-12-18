@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import UserService from 'src/views/service/user.service';
 import {
   CButton,
   CCard,
@@ -13,190 +12,456 @@ import {
   CInputGroupText,
   CRow,
   CFormLabel,
-  CTable
+  CTable,
+  CFormSelect,
+  CFormTextarea,
+  CCardText
 } from '@coreui/react'
-import { BsTrash, BsFillPencilFill,BsTicketDetailed } from "react-icons/bs";
-
+import billService from 'src/views/service/bill-service';
 import { Table, Pagination, Button, Modal, Form } from 'react-bootstrap';
+import "../../css/orderdetail.css"
+import PaginationCustom from 'src/views/pagination/PaginationCustom';
+import CurrencyFormatter from 'src/common/CurrencyFormatter';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import ReactDatePicker from 'react-datepicker';
+import { format, addDays } from 'date-fns';
+import { utcToZonedTime } from 'date-fns-tz';
 
-const OrderComponent = () =>{
+import "react-datepicker/dist/react-datepicker.css";
+const OrderComponent = () => {
+  const formatter = new CurrencyFormatter();
+  const [searchBill, setSearchBill] = useState(
+    {
+      email: null,
+      page: 0,
+      phone: null,
+      size: 10,
+      startDate: null,
+      statusShipping: null,
+      payment: null,
+      fullName: null,
+      salesStatus: null
+    }
+  );
+  const [listBill, setListBill] = useState([]);
+  const [orderDetail, setOrderDetail] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [totalPages, setTotalPages] = useState(0);
 
-    const [order, setOrder] = useState([]);
-    const [orderDetail,setOrderDetail] = useState([]);
-    const [showModalOrderDetail,setShowModalOrderDetail] = useState(false)
-    useEffect(() => {
-      getOrderList();
-    }, []);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedStatus, setSelectedStatus] = useState(orderDetail.statusShipping);
+  const options = [
+    { label: '⬇️ Chưa xác nhận 🙅', value: 'CHUA_XAC_NHAN', disabled: false },
+    { label: '⬇️ Đã xác nhận và đóng gói ✅', value: 'DA_XAC_NHAN_VA_DONG_GOI', disabled: false },
+    { label: '⬇️ Đã giao bên vận chuyển 🚚', value: 'DA_GIAO_BEN_VAN_CHUYEN', disabled: false },
+    { label: '🆗 Khách đã nhận hàng 🤹', value: 'KHACH_DA_NHAN_HANG', disabled: false },
+  ];
 
-    const getOrderList = () => {
-      UserService.getOrderList()
-        .then(res => {
-          setOrder(res.data.data);
+  const optionsSearch = [
+    { label: 'Tất cả trạng thái ', value: 'null' },
+    { label: 'Chưa xác nhận 🙅', value: 'CHUA_XAC_NHAN' },
+    { label: 'Đã xác nhận và đóng gói ✅', value: 'DA_XAC_NHAN_VA_DONG_GOI' },
+    { label: 'Đã giao bên vận chuyển 🚚', value: 'DA_GIAO_BEN_VAN_CHUYEN' },
+    { label: 'Khách đã nhận hàng 🤹', value: 'KHACH_DA_NHAN_HANG' },
+    { label: 'Hủy 🚫', value: 'HUY' }
+  ];
+
+  const optionSearchSale = [
+    { label: 'Tất cả hình thức ', value: 'null' },
+    { label: 'Bán tại quầy ', value: false },
+    { label: 'Bán trực tuyến ', value: true },
+
+
+  ]
+
+  const payment = [
+    { label: 'Tất cả phương thức ', value: 'null' },
+    { label: 'COD', value: 0 },
+    { label: 'VNPAY', value: 1 },
+    { label: 'Banking', value: 2 },
+  ];
+
+  if (selectedStatus === 'CHUA_XAC_NHAN' || selectedStatus === 'HUY') {
+    options.push({ label: 'Hủy 🚫', value: 'HUY', disabled: false });
+  }
+
+  const currentIndex = options.findIndex(option => option.value === selectedStatus);
+
+  if (selectedStatus === 'CHUA_XAC_NHAN') {
+    options.forEach((option, index) => {
+      option.disabled = index !== 4 && index !== currentIndex && index !== currentIndex + 1;
+    });
+  } else {
+    options.forEach((option, index) => {
+      option.disabled = index !== currentIndex && index !== currentIndex + 1;
+    });
+  }
+
+  useEffect(() => {
+    getOrderList();
+    setSelectedStatus(orderDetail.statusShipping);
+
+  }, [searchBill.page, orderDetail.statusShipping]);
+
+  const getOrderList = () => {
+    billService.findAllBill(searchBill)
+      .then(res => {
+        setListBill(res.data.data.content)
+        setTotalPages(res.data.data.totalPages);
+      })
+      .catch(err => {
+        if (err.response.status === 401) {
+          navigate("/login")
+        }
+        console.error('Error fetching order:', err);
+      })
+  }
+
+  const handlePageChange = (page) => {
+    setSearchBill({ ...searchBill, page: page - 1 })
+    setCurrentPage(page)
+  };
+
+  const cancelShowModal = () => {
+    setShowModal(false);
+  };
+
+  const handleModal = (idBill) => {
+    getBillById(idBill)
+    setShowModal(true);
+  };
+
+  const getBillById = (idBill) => {
+    billService.findByIdBill(idBill)
+      .then(res => {
+        console.log(res);
+        setOrderDetail(res.data);
+      })
+      .catch(err => {
+        console.error('Error fetching bill by id:', err);
+      })
+
+  }
+
+  const handleStatusChange = (event) => {
+    const newStatus = event.target.value;
+    setSelectedStatus(newStatus);
+
+    const json = {
+      idBill: orderDetail.id,
+      status: newStatus
+    }
+    billService.updateBill(json)
+      .then(res => {
+        toast.success("Cập nhật trạng thái đơn hàng thành công", {
+          position: "top-right",
+          autoClose: 1000
         })
-        .catch(err => {
-          console.error('Error fetching order:', err);
-        })
-    }
+      })
+      .catch(err => {
+        console.error('Error fetching:', err);
+      })
+  };
 
+  const statusStyles = {
+    'CHUA_XAC_NHAN': {
+      backgroundColor: "#f7f6ad",
+      borderRadius: "7px",
+      textAlign: "center",
+      color: "black",
+      fontSize: "14px",
+    },
 
-    const [currentPage, setCurrentPage] = useState(1);
-    const orderPerPage = 7;
-    const indexOfLastProduct = currentPage * orderPerPage;
-    const indexOfFirstProduct = indexOfLastProduct - orderPerPage;
-    const currentOrder = order.slice(indexOfFirstProduct, indexOfLastProduct);
+    'DA_XAC_NHAN_VA_DONG_GOI': {
+      backgroundColor: "#c688eb",
+      borderRadius: "7px",
+      textAlign: "center",
+      color: "white",
+      fontSize: "14px",
+    },
+    'DA_GIAO_BEN_VAN_CHUYEN': {
+      backgroundColor: "#92b9e4",
+      borderRadius: "7px",
+      textAlign: "center",
+      color: "white",
+      fontSize: "14px",
+    },
+    'KHACH_DA_NHAN_HANG': {
+      backgroundColor: "#19AD54",
+      borderRadius: "7px",
+      textAlign: "center",
+      color: "white",
+      fontSize: "14px",
+    },
+    'HUY': {
+      backgroundColor: "#fe4a49",
+      borderRadius: "7px",
+      textAlign: "center",
+      color: "white",
+      fontSize: "14px",
+    },
+  };
 
-    const totalPages = Math.ceil(order.length / orderPerPage);
+  //search
+  const handleInputChange = (field, value) => {
+    const nullValue = value === 'null' ? null : value;
 
-    // Xử lý chuyển trang
-    const handlePageChange = (pageNumber) => {
-      setCurrentPage(pageNumber);
-    };
+    setSearchBill((prevSearchBill) => ({
+      ...prevSearchBill,
+      [field]: nullValue,
+    }));
+  };
 
-    const handleOrderDetail = (orderDetail) =>{
-      setOrderDetail(orderDetail);
-      console.log(orderDetail)
-      setShowModalOrderDetail(true)
-    }
-
-    const cancelOrderDetail = ()=>{
-      setShowModalOrderDetail(false);
-    }
-
-    return(
+  const handleDateChange = (date) => {
+    console.log(date);
+    setSearchBill((prevSearchBill) => ({
+      ...prevSearchBill,
+      startDate: date ? format(date, 'yyyy-MM-dd') : null,
+    }));
+  };
+  return (
     <div class="container">
- <div class="nav">
-        <CForm class="row g-3">
-          <CCol xs="auto">
-          <CFormInput type="text" id="nameProduct" placeholder="NumberPhone or Email" />
-          </CCol>
-          <CCol xs="auto">
-          </CCol>
-          <CCol xs="auto">
-            <CFormInput type="text" id="nameProduct" placeholder="Date" />
-          </CCol>
-          <CCol xs="auto">
-          </CCol>
-          <CCol xs="auto">
-            <CFormInput type="text" id="nameProduct" placeholder="Name customer" />
-          </CCol>
-          <CCol xs="auto">
-            <CButton type="submit" className="mb-3">
-              Search
-            </CButton>
-          </CCol>
-        </CForm>
-      </div>
-      <div class="table">
-      <Table striped bordered hover responsive>
-          <thead>
-            <tr>
-              <th>Id</th>
-              <th>Phone number</th>
-              <th>Email</th>
-              <th>Address</th>
-              <th>Payment Method</th>
-              <th>Order Date</th>
-              <th>Total Quantity</th>
-              <th>Total Amount</th>
-              <th>Zip Code</th>
-              <th>Name Customer</th>
-              <th>Detail</th>
-              <th>Update</th>
-              <th>Delete</th>
-            </tr>
-          </thead>
+      <ToastContainer position="top-right"></ToastContainer>
+      <CRow>
+        <CCol md={2}>
+          <CFormInput
+            type="text"
+            id="fullName"
+            placeholder="Tên khách hàng"
+            onChange={(e) => handleInputChange('fullName', e.target.value)}
+          />
+        </CCol>
+        <CCol md={2}>
+          <CFormInput
+            type="text"
+            id="phone"
+            placeholder="Số điện thoại"
+            onChange={(e) => handleInputChange('phone', e.target.value)}
+          />
+        </CCol>
+        <CCol md={2}>
+          <ReactDatePicker
+            id="startDate"
+            autoComplete='off'
+            className='date-pick'
+            placeholderText="Chọn ngày"
+            selected={
+              searchBill.startDate
+                ? utcToZonedTime((new Date(searchBill.startDate)), 'UTC')
+                : null
+            }
+            onChange={handleDateChange}
+            showYearDropdown
+            scrollableYearDropdown
+            dateFormat="dd/MM/yyyy"
+            isClearable
+          />
+        </CCol>
+        <CCol md={2}>
+          <CFormSelect
+            type="text"
+            id="payment"
+            options={payment}
+            onChange={(e) => handleInputChange('payment', e.target.value)}
+          />
+        </CCol>
+        <CCol md={2}>
+          <CFormSelect
+            type="text"
+            id="statusShipping"
+            placeholder="Trạng thái"
+            options={optionsSearch}
+            onChange={(e) => handleInputChange('statusShipping', e.target.value)}
+          />
+        </CCol>
+        <CCol md={2} className='mb-3'>
+          <CFormSelect
+            type="text"
+            id="salesStatus"
+            placeholder="Hình thức bán hàng"
+            options={optionSearchSale}
+            onChange={(e) => handleInputChange('salesStatus', e.target.value)}
+          />
+        </CCol>
+        <CCol md={12} style={{ textAlign: "end" }}>
+          <CButton type="submit" className="mb-3" onClick={getOrderList}>
+            Tìm Kiếm
+          </CButton>
+        </CCol>
+      </CRow>
+      <CCard>
+        <CCardBody>
+          <div class="table">
+            <Table bordered hover responsive>
+              <thead>
+                <tr>
+                  <th>STT</th>
+                  <th>Trạng thái đơn hàng</th>
+                  <th>Số điện thoại</th>
+                  <th>Email</th>
+                  <th>Địa chỉ</th>
+                  <th>Họ Và Tên</th>
+                  <th>Phương thức TT</th>
+                  <th>Ngày đặt hàng</th>
+                  <th>Tổng tiền</th>
+                </tr>
+              </thead>
+              <tbody>
+                {listBill.map((orders, index) => (
+                  <tr key={index} onClick={() => handleModal(orders.id)}>
+                    <td> {currentPage < 2
+                      ? index + 1
+                      : index + 1 + (currentPage - 1) * 10}
+                    </td>
+                    <td >
+                      <CCardText style={statusStyles[orders.statusShipping]}>
+                        {orders.statusShipping === 'CHUA_XAC_NHAN' && 'Chưa xác nhận'}
+                        {orders.statusShipping === 'DA_XAC_NHAN_VA_DONG_GOI' && 'Đã xác nhận và đóng gói'}
+                        {orders.statusShipping === 'DA_GIAO_BEN_VAN_CHUYEN' && 'Đã giao bên vận chuyển'}
+                        {orders.statusShipping === 'KHACH_DA_NHAN_HANG' && 'Khách đã nhận hàng'}
+                        {orders.statusShipping === 'HUY' && 'Hủy'}
+                      </CCardText>
 
-          <tbody>
-            {currentOrder.map((orders) => (
-              <tr key={orders.id}>
-                <td>{orders.id}</td>
-                <td>{orders.phoneNumber}</td>
-                <td>{orders.email}</td>
-                <td>{orders.address}</td>
-                <td>{orders.paymentMethod}</td>
-                <td>{orders.orderDate}</td>
-                <td>{orders.orderDetailId.sumQuantity}</td>
-                <td>{orders.totalAmount}</td>
-                <td>{orders.zipCode}</td>
-                <td>{orders.customer.nameCustomer}</td>
-                <td>
-                  <Button variant="primary" onClick={() => handleOrderDetail(orders.orderDetailId.productOrderId)} >
-                    <BsTicketDetailed></BsTicketDetailed>
-                  </Button>
-                </td>
-                <td>
-                  <Button variant="primary" >
-                    <BsFillPencilFill></BsFillPencilFill>
-                  </Button>
-                </td>
-                <td>
-                  <Button variant="danger" >
-                    <BsTrash></BsTrash>
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-          </Table>
+                    </td>
+                    <td>{orders.sdt}</td>
+                    <td>{orders.customerEntity.email || ""}</td>
+                    <td className="truncate" title={orders.address}>
+                      {orders.address}
+                    </td>
+
+                    <td>{orders.fullName}</td>
+                    <td>
+                      {orders.payment === 0 && 'COD'}
+                      {orders.payment === 1 && 'VNPAY'}
+                      {orders.payment === 2 && 'Banking'}
+                    </td>                    <td>{orders.createAt}</td>
+                    <td>{formatter.formatVND(orders.downTotal)}</td>
+                  </tr>
+                ))}
+
+              </tbody>
+            </Table>
             {/* Phân trang */}
-        <Pagination>
-          {Array.from({ length: totalPages }).map((_, index) => (
-            <Pagination.Item
-              key={index + 1}
-              active={index + 1 === currentPage}
-              onClick={() => handlePageChange(index + 1)}
-            >
-              {index + 1}
-            </Pagination.Item>
-          ))}
-        </Pagination>
-      </div>
+            <PaginationCustom
+              currentPageP={currentPage}
+              maxPageNumber={5}
+              total={totalPages}
+              onChange={handlePageChange}
+            />
+          </div>
+        </CCardBody>
+      </CCard>
 
 
-      <Modal show={showModalOrderDetail} onHide={cancelOrderDetail}>
-          <Modal.Header closeButton>
-            <Modal.Title>Cập nhật sản phẩm</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-          <Table striped bordered hover responsive>
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Sum Quantity</th>
-      <th>Name</th>
-      <th>Price</th>
-    </tr>
-  </thead>
-  <tbody>
-    {orderDetail.map((order) => (
-      <tr key={order.id}>
-        <td>{order.id}</td>
-        <td>{order.quantity}</td>
-        {order.productId.length > 0 ? (
-          <>
-            <td>{order.productId[0].name}</td>
-            <td>{order.productId[0].price}</td>
-          </>
-        ) : (
-          <>
-            <td>Khong co sp</td>
-            <td>Khong co sp</td>
-          </>
-        )}
-      </tr>
-    ))}
-  </tbody>
-</Table>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={cancelOrderDetail}>
-              Hủy
-            </Button>
-          </Modal.Footer>
-        </Modal>
-
+      <Modal show={showModal} onHide={cancelShowModal}
+        size="xl"
+        centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Chi tiết đơn hàng</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <CRow>
+            <CCol md={12} className='mb-3'>
+              <CCol md={4}>
+                <CFormSelect
+                  style={{ fontWeight: "bold" }}
+                  label="Trạng thái đơn hàng"
+                  aria-label="Trạng thái"
+                  value={selectedStatus}
+                  onChange={handleStatusChange}
+                  options={options}
+                />
+              </CCol>
+            </CCol>
+            <CCol md={3} className='mb-3'>
+              <CFormInput className='inputDetail' label="Mã hóa đơn: " value={orderDetail.id || null} readOnly></CFormInput>
+            </CCol>
+            <CCol md={3} className='mb-3'>
+              <CFormInput className='inputDetail' label="Phương thức thanh toán: "
+                value={orderDetail.payment === 0 ? 'COD' :
+                  orderDetail.payment === 1 ? 'VNPAY' :
+                    orderDetail.payment === 2 ? 'Banking' :
+                      'Unknown'} readOnly></CFormInput>
+            </CCol>
+            <CCol md={3} className='mb-3'>
+              <CFormInput className='inputDetail' label="Tên người nhận: " value={orderDetail.fullName || null} readOnly></CFormInput>
+            </CCol>
+            <CCol md={3} className='mb-3'>
+              <CFormInput className='inputDetail' label="Số điện thoại: " value={orderDetail.sdt || null} readOnly></CFormInput>
+            </CCol>
+            <CCol md={3} className='mb-3'>
+              <CFormInput className='inputDetail' label="Email: " value={orderDetail.customerEntity && orderDetail.customerEntity.email || null} readOnly></CFormInput>
+            </CCol>
+            <CCol md={3} className='mb-3'>
+              <CFormInput className='inputDetail' label="Ngày tạo: " value={orderDetail.createAt || null} readOnly></CFormInput>
+            </CCol>
+            <CCol md={6} className='mb-3'>
+              <CFormInput className='inputDetail' label="Địa chỉ: " value={orderDetail.address || null} readOnly></CFormInput>
+            </CCol>
+            <CCol md={3} className='mb-3'>
+              <CFormInput className='inputDetail' label="Tổng tiền sản phẩm: " value={formatter.formatVND(orderDetail.total) || null} readOnly></CFormInput>
+            </CCol>
+            <CCol md={3} className='mb-3'>
+              <CFormInput className='inputDetail' label="Phí giao hàng: " value={formatter.formatVND(orderDetail.transportFee) || null} readOnly></CFormInput>
+            </CCol>
+            <CCol md={3} className='mb-3'>
+              <CFormInput
+                className='inputDetail'
+                label="Mã giảm giá: "
+                value={
+                  (orderDetail.voucherEntities &&
+                    orderDetail.voucherEntities[0] &&
+                    orderDetail.voucherEntities[0].amount &&
+                    orderDetail.voucherEntities[0].name) ? (
+                    formatter.formatVND(orderDetail.voucherEntities[0].amount) +
+                    "_" +
+                    orderDetail.voucherEntities[0].name
+                  ) : "Không có"
+                }
+                readOnly
+              ></CFormInput>
+            </CCol>
+            <CCol md={3} className='mb-3'>
+              <CFormInput className='inputDetail' label="Tổng tiền thực nhận: " value={formatter.formatVND(orderDetail.downTotal) || null} readOnly></CFormInput>
+            </CCol>
+            <CCol md={7} className='mb-3'>
+              <CFormTextarea className='inputDetail' label="Ghi chú: " value={orderDetail.note || null} readOnly></CFormTextarea>
+            </CCol>
+          </CRow>
+          <Table bordered hover responsive>
+            <thead>
+              <tr style={{ textAlign: "center" }}>
+                <th>STT</th>
+                <th>Tên sản phẩm</th>
+                <th>Màu</th>
+                <th>Kích cỡ</th>
+                <th>Số lượng sản phẩm</th>
+                <th>Đơn giá</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orderDetail.oderDetailEntities && orderDetail.oderDetailEntities.map((orders, index) => (
+                <tr key={index}>
+                  <td>{index + 1}</td>
+                  <td>{orders.productDetailEntities.idProduct.nameProduct || null}</td>
+                  <td>{orders.productDetailEntities.idProperty.name || null}</td>
+                  <td>{orders.productDetailEntities.idSize.name}</td>
+                  <td>{orders.quantity_oder}</td>
+                  <td>{formatter.formatVND(orders.productDetailEntities.idProduct.price)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={cancelShowModal}>
+            Hủy
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
-    )
+  )
 }
 
 export default OrderComponent;

@@ -21,6 +21,38 @@ class EventService {
   findByIdVoucher(id) {
     return axios.get(API_URL_VOUCHER + 'find-by-id/' + id, { headers: authHeader() });
   }
+
+  createEvent(json) {
+    return axios.post(API_URL_EVENT + `create`, json, { headers: authHeader() });
+
+  }
+
+  createVoucher(json) {
+    return axios.post(API_URL_VOUCHER + `create`, json, { headers: authHeader() });
+
+  }
+
+  updateEvent(json) {
+    return axios.post(API_URL_EVENT + `update`, json, { headers: authHeader() });
+
+  }
+
+  updateVoucher(json) {
+    return axios.post(API_URL_VOUCHER + `update`, json, { headers: authHeader() });
+  }
+
+
+  deleteEvent(json) {
+    return axios.post(API_URL_EVENT + `delete`, json, { headers: authHeader() });
+
+  }
+
+  deleteVoucher(json) {
+    return axios.post(API_URL_VOUCHER + `delete`, json, { headers: authHeader() });
+
+  }
+
+
 }
 
 export default new EventService();

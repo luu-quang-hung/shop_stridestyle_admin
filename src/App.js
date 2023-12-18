@@ -18,6 +18,20 @@ const Page404 = React.lazy(() => import('./views/pages/page404/Page404'))
 const Page500 = React.lazy(() => import('./views/pages/page500/Page500'))
 
 class App extends Component {
+
+  state = {
+    token: null,
+  };
+
+  componentDidMount() {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user && user.accessToken) {
+    } else {
+
+      window.location.href = '/#/login';
+    }
+  }
+
   render() {
     return (
       <HashRouter>

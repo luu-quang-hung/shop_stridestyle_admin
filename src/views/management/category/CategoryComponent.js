@@ -12,58 +12,91 @@ import {
   CRow,
   CFormLabel,
   CTable,
-  CContainer
+  CContainer,
+  CFormSelect
 } from '@coreui/react'
 import { BsTrash, BsFillPencilFill } from "react-icons/bs";
 import { FormControl, InputGroup } from 'react-bootstrap';
 import categoryService from 'src/views/service/category-service';
 import { Table, Pagination, Button, Modal, Form } from 'react-bootstrap';
 import PaginationCustom from 'src/views/pagination/PaginationCustom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { confirmAlert } from "react-confirm-alert"; // Import
+import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
+
 const CategoryComponent = () => {
 
-  const [trandemark, setTrademark] = useState([]);
-  const [trandemarkSearch, setTrademarkSearch] = useState({
+  const [trademark, setTrademark] = useState([]);
+  const [searchTrademark, setSearchTrademark] = useState({
     page: 0,
-    size: 10
+    size: 10,
+    name: null
   });
 
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
 
-
-
   const [newTrademark, setNewTrademark] = useState({
-    name: ''
+    gender: false,
+    name: null
   });
   const [showModal, setShowModal] = useState(false);
+  const [showModalAdd, setShowModalAdd] = useState(false);
+
   const [trademarkIdToDelete, setTrademarkIdToDelete] = useState(null);
   const [trademarkToUpdate, setTrademarkToUpdate] = useState({});
 
 
   useEffect(() => {
     getTradeMarkList();
-  }, [trandemarkSearch]);
+  }, [searchTrademark]);
 
   const getTradeMarkList = () => {
-    categoryService.findAllCategory(trandemarkSearch)
+    categoryService.findAllCategory(searchTrademark)
       .then(res => {
         setTrademark(res.data.content)
         setTotalPages(res.data.totalPages);
         console.log(res.data);
       })
       .catch(error => {
+        if (err.response.status === 401) {
+          navigate("/login")
+        }
         console.log("Error load data Trademark", error);
       })
   }
 
   const handlePageChange = (page) => {
-    setTrademarkSearch({ ...trandemarkSearch, page: page - 1 })
+    setSearchTrademark({ ...searchTrademark, page: page - 1 })
     setCurrentPage(page)
   };
 
-
+  //add
   const handleAddTrademark = () => {
-    setShowModal(true);
+    setShowModalAdd(true);
+  };
+  const confirmAddTradeMark = () => {
+    categoryService.createCategory(newTrademark)
+      .then(res => {
+        console.log(res);
+        toast.success("Tạo sản danh mục thành công", {
+          position: "top-right",
+          autoClose: 1000
+        })
+        setShowModalAdd(false)
+        getTradeMarkList()
+        setNewTrademark({
+          name: "",
+          gender: false
+        })
+      }).catch(err => {
+        console.log(err);
+        toast.error("Tạo sản danh mục thất bại", {
+          position: "top-right",
+          autoClose: 1000
+        })
+      })
   };
 
   const handleChange = (event) => {
@@ -71,68 +104,44 @@ const CategoryComponent = () => {
     setNewTrademark((prevInfo) => ({ ...prevInfo, [name]: value }));
   };
 
-
-
-  // Xác nhận thêm mới sản phẩm
-  const confirmAddTradeMark = () => {
-    UserService.createTrademark(newTrademark)
-      .then(res => {
-        console.log(res);
-        getTradeMarkList();
-        setShowModal(false);
-      }).catch(error => {
-        console.log(error);
-      })
+  const handleInputChange = (field, value) => {
+    const nullValue = value === 'null' ? null : value;
+    setSearchTrademark((prevSearchBill) => ({
+      ...prevSearchBill,
+      [field]: nullValue,
+    }));
   };
 
-  // Hủy thêm mới sản phẩm
   const cancelAddTradeMark = () => {
-    setShowModal(false);
+    setShowModalAdd(false);
   };
-
-  const handleDeleteTrademark = (id) => {
-    setTrademarkIdToDelete(id);
-    setShowModal(true);
-  };
-
-  const confirmDeleteTrademark = () => {
-    UserService.deleteTrademark(trademarkIdToDelete)
-      .then(res => {
-        console.log(res);
-        getTradeMarkList();
-        setShowModal(false);
-
-      }).catch(error => {
-        console.log(error);
-      })
-  };
-
-  // Hủy xóa sản phẩm
-  const cancelDeleteTrademark = () => {
-    setShowModal(false);
-  };
-
 
   // Xử lý cập nhật sản phẩm
-  const handleUpdateTrademark = (Trademark) => {
-    setTrademarkToUpdate(Trademark);
+  const handleUpdateTrademark = (trademark) => {
+    setTrademarkToUpdate(trademark);
     setShowModal(true);
   };
 
-  // Xác nhận cập nhật sản phẩm
   const confirmUpdateTrademark = () => {
-    UserService.updateTrademark(trademarkToUpdate)
+    categoryService.updateCategory(trademarkToUpdate)
       .then(res => {
         console.log(res);
-        getTradeMarkList();
-        setShowModal(false);
+        toast.success("Cập nhật danh mục thành công", {
+          position: "top-right",
+          autoClose: 1000
+        })
+        getTradeMarkList();;
+        setShowModal(false)
 
-      }).catch(error => {
-        console.log(error);
+      }).catch(err => {
+        console.log(err);
+        toast.error("Cập nhật danh mục thất bại", {
+          position: "top-right",
+          autoClose: 1000
+        })
       })
   };
 
-  // Hủy cập nhật sản phẩm
   const cancelUpdateTrademark = () => {
     setShowModal(false);
   };
@@ -141,56 +150,97 @@ const CategoryComponent = () => {
     const { name, value } = event.target;
     setTrademarkToUpdate((prevInfo) => ({ ...prevInfo, [name]: value }));
   }
+
+  const confirmDeleteCategory = (idCate, nameCate) => {
+    if (idCate) {
+      confirmAlert({
+        message:
+          `Bạn có chắc chắn muốn xóa danh mục ` + nameCate + ` không ?`,
+        buttons: [
+          {
+            label: "Trở lại",
+            className: "stayPage",
+          },
+          {
+            label: "Xác nhận",
+            onClick: () => deleteCategory(idCate),
+            className: "leavePage",
+          },
+        ],
+      });
+    }
+  };
+  const deleteCategory = (idCate) => {
+    const json = {
+      id: idCate
+    }
+    categoryService.deleteCategory(json)
+      .then(res => {
+        toast.success("Xóa danh mục thành công", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        getTradeMarkList();
+      })
+      .catch(error => {
+        toast.error("Xóa danh mục thất bại", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        console.log("Error load delete", error);
+      })
+  }
   return (
     <CContainer>
+      <ToastContainer position="top-right"></ToastContainer>
+      <div class="nav">
+        <CForm class="row g-3">
+          <CCol xs="auto">
+            <CFormLabel htmlFor="staticEmail2" >
+              <Button className="btn-loading" onClick={handleAddTrademark} >
+                Thêm mới
+              </Button>
+            </CFormLabel>
+          </CCol>
+          <CCol xs="auto">
+            <CFormInput
+              type="text"
+              id="name"
+              placeholder="Tên danh mục"
+              onChange={(e) => handleInputChange('name', e.target.value)}
+            />
+          </CCol>
+        </CForm>
+      </div>
       <CCard>
         <CCardBody>
-          <div class="nav">
-            <CForm class="row g-3">
-              <CCol xs="auto">
-                <CFormLabel htmlFor="staticEmail2" >
-                  <Button variant="outline-primary" className="btn-loading" onClick={handleAddTrademark} >
-                    Thêm mới
-                  </Button>
-                </CFormLabel>
-              </CCol>
-              <CCol xs="auto">
-                <CFormInput type="text" id="nameTrademark" placeholder="Name Trademark" />
-              </CCol>
-              <CCol xs="auto">
-                <CButton type="submit" className="mb-3">
-                  Tìm kiếm
-                </CButton>
-              </CCol>
-            </CForm>
-          </div>
+
           <div class="table">
-            <CTable striped bordered hover responsive>
+            <CTable bordered hover responsive>
               <thead>
                 <tr>
-                  <th>No</th>
-                  <th>Name</th>
-                  <th>Gender</th>
-
-                  <th style={{ width: "10%" }}>Actions</th>
+                  <th>STT</th>
+                  <th>Tên danh mục</th>
+                  <th>Giới tính</th>
+                  <th style={{ width: "10%" }}>Hành động</th>
                 </tr>
               </thead>
               <tbody>
-                {trandemark.map((trademark, index) => (
+                {trademark.map((trademark, index) => (
                   <tr key={index}>
                     <td> {currentPage < 2
                       ? index + 1
                       : index + 1 + (currentPage - 1) * 10}
-                    </td>       
-                             <td>{trademark.name}</td>
-                    <td>{trademark.gender ? "Male" : "Female"}</td>
+                    </td>
+                    <td>{trademark.name}</td>
+                    <td>{trademark.gender ? "Nữ" : "Nam"}</td>
                     <td>
                       <CRow>
                         <CCol md={4}>
-                          <BsFillPencilFill onClick={() => handleUpdateProduct(product)}></BsFillPencilFill>
+                          <BsFillPencilFill onClick={() => handleUpdateTrademark(trademark)}></BsFillPencilFill>
                         </CCol>
                         <CCol md={4}>
-                          <BsTrash ></BsTrash>
+                          <BsTrash onClick={() => confirmDeleteCategory(trademark.id, trademark.name)}></BsTrash>
                         </CCol>
                       </CRow>
                     </td>
@@ -205,27 +255,36 @@ const CategoryComponent = () => {
               onChange={handlePageChange}
             />
           </div>
-          <Modal show={showModal} onHide={cancelAddTradeMark}>
+          <Modal show={showModalAdd} onHide={cancelAddTradeMark} centered>
             <Modal.Header closeButton>
-              <Modal.Title>Thêm mới nhà sản xuất</Modal.Title>
+              <Modal.Title>Thêm mới danh mục</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-              <Form>
-                <Form.Group controlId="formName">
-                  <Form.Label>Name</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="nameTrademark"
-                    value={newTrademark.nameTrademark}
+              <CRow>
+                <CCol md={12} className='mb-3'>
+                  <CFormInput
+                    label="Tên danh mục"
+                    name="name"
+                    value={newTrademark.name}
                     onChange={handleChange}
-                    placeholder="Enter name"
-                  /></Form.Group>
-                <Form.Control
-                  placeholder="Username"
-                  aria-label="Username"
-                  aria-describedby="basic-addon1"
-                />
-              </Form>
+                    placeholder="Nhập tên danh mục"
+                  />
+                </CCol>
+                <CCol md={12}>
+                  <CFormSelect
+                    label="Giới tính"
+                    name="gender"
+                    onChange={handleChange}
+                    value={newTrademark.gender}
+                    options={[
+                      'Chọn giới tính',
+                      { label: 'Nam', value: false },
+                      { label: 'Nữ', value: true },
+
+                    ]}
+                  />
+                </CCol>
+              </CRow>
             </Modal.Body>
             <Modal.Footer>
               <Button variant="secondary" onClick={cancelAddTradeMark}>
@@ -237,26 +296,9 @@ const CategoryComponent = () => {
             </Modal.Footer>
           </Modal>
 
-          {/* Modal xác nhận xóa sản phẩm */}
-          <Modal show={showModal} onHide={cancelDeleteTrademark}>
-            <Modal.Header closeButton>
-              <Modal.Title>Xác nhận xóa sản phẩm</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>Bạn có chắc chắn muốn xóa sản phẩm này không?</Modal.Body>
-            <Modal.Footer>
-              <Button variant="secondary" onClick={cancelDeleteTrademark}>
-                Hủy
-              </Button>
-              <Button variant="danger" onClick={confirmDeleteTrademark}>
-                Xóa
-              </Button>
-            </Modal.Footer>
-          </Modal>
-
-          {/* Modal cập nhật sản phẩm */}
           <Modal show={showModal} onHide={cancelUpdateTrademark}>
             <Modal.Header >
-              <Modal.Title>Cập nhật sản phẩm</Modal.Title>
+              <Modal.Title>Cập nhật danh mục</Modal.Title>
             </Modal.Header>
             <Modal.Body>
               <Form>
@@ -265,21 +307,33 @@ const CategoryComponent = () => {
                   <FormControl
                     type="text"
                     placeholder="Enter ID"
-                    value={trademarkToUpdate?.idTrademark || ''} disabled
+                    value={trademarkToUpdate.id || ''} disabled
                     onChange={handleChangeUpdate}
                   />
                 </Form.Group>
-                <Form.Group controlId="formName">
-                  <Form.Label>Name</Form.Label>
+                <Form.Group controlId="formName" className='mb-3'>
+                  <Form.Label>Tên danh mục</Form.Label>
                   <FormControl
                     type="text"
-                    name="nameTrademark"
-                    value={trademarkToUpdate.nameTrademark}
+                    name="name"
+                    value={trademarkToUpdate.name}
                     onChange={handleChangeUpdate}
                     placeholder="Enter name"
                   />
                 </Form.Group>
+                <CFormSelect
+                  name="gender"
+                  label="Giới tính"
+                  onChange={handleChangeUpdate}
+                  value={trademarkToUpdate.gender}
+                  options={[
+                    { label: 'Nam', value: false },
+                    { label: 'Nữ', value: true },
+
+                  ]}
+                />
               </Form>
+
             </Modal.Body>
             <Modal.Footer>
               <Button variant="secondary" onClick={cancelUpdateTrademark}>

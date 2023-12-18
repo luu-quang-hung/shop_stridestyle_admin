@@ -1,0 +1,55 @@
+.inputDetail{
+	appearance: none;
+	border: none;
+	outline: none;
+	border-bottom: .2em solid #dbacbc;
+	background: rgba(#bd0743, .2);
+	border-radius: .2em .2em 0 0;
+	padding: .4em;
+}
+
+.form-label{
+	font-weight: bold;
+}
+
+.date-pick{
+	display: block;
+    width: 100%;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--cui-input-color, var(--cui-body-color));
+    appearance: none;
+    background-color: var(--cui-input-bg, var(--cui-body-bg));
+    background-clip: padding-box;
+    border: var(--cui-border-width) solid var(--cui-input-border-color, var(--cui-border-color));
+    border-radius: var(--cui-border-radius);
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+
+.truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+    cursor: pointer;
+    position: relative;
+}
+
+.truncate:hover::before {
+    content: attr(title);
+    display: inline-block;
+    background-color: rgba(255, 255, 255, 0.342);
+    color: black;
+    border: 1px solid #ccc;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    top: 100%;
+    left: 0;
+    white-space: normal;
+    max-width: none;
+    box-shadow: 0 0 45px rgba(4, 63, 151, 0.2);
+}
