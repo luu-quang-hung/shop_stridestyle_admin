@@ -39,7 +39,11 @@ const Invoice = () => {
     function findById(id) {
         billService.findByIdBill(id).then((res) => {
             setBill(res.data);
-        }).catch(() => { })
+        }).catch(() => {
+            if (err.response.status === 401) {
+                navigate("/login")
+              }
+         })
     }
     function printInvoice() {
         let content = document.getElementById("invoicePrint");

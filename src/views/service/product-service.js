@@ -33,6 +33,10 @@ class ProductService {
     return axios.post(API_URL + "find-quantity-product", payload, {headers: authHeader()});
   }
 
+  updateQuantityProduct(payload) {
+    return axios.post(API_URL + "update-quantity-product", payload, {headers: authHeader()});
+  }
+
 }
 
 export default new ProductService();

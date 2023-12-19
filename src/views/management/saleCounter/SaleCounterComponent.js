@@ -85,7 +85,11 @@ const SaleCounterComponent = () => {
                 }
             })
             setProductList(dataByCategory);
-        }).catch(() => { })
+        }).catch(() => {
+            if (err.response.status === 401) {
+                navigate("/login")
+            }
+        })
     }
 
     function filterProduct(e) {
@@ -180,11 +184,11 @@ const SaleCounterComponent = () => {
         invoice.downTotal = invoice.total;
         billService.createBill(invoice).then((res) => {
             console.log(res);
-            if (res.data.ecode  === "420" ) {
-                return toast.error("Số Lượng Sản Phẩm trên bill Lớn hơn số hàng tồn trong kho" , {
+            if (res.data.ecode === "420") {
+                return toast.error("Số Lượng Sản Phẩm trên bill Lớn hơn số hàng tồn trong kho", {
                     position: "top-right",
                     autoClose: 1000
-                }); 
+                });
             }
             toast.success("Thêm sản phẩm thành công!", {
                 position: "top-right",

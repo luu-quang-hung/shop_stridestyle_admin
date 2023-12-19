@@ -31,8 +31,9 @@ import CurrencyFormatter from 'src/common/CurrencyFormatter';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
-
+import { useNavigate } from 'react-router-dom';
 const ProductComponent = () => {
+  const navigate = new useNavigate();
   const format = new CurrencyFormatter();
   const [productCreate, setProductCreate] = useState({
     nameProduct: '',
@@ -69,6 +70,11 @@ const ProductComponent = () => {
   const [listImages, setListImages] = useState([]);
   const [errors, setErrors] = useState({});
 
+  const [indexOfFirstItemDetails, setIndexOfFirstItemDetail] = useState(0);
+  const [editingIndex, setEditingIndex] = useState(null);
+
+  const [isSaveButtonVisible, setSaveButtonVisible] = useState(false); // Trạng thái hiển thị của nút "Lưu"
+
   useEffect(() => {
     getProductList();
   }, [productSearch.page]);
@@ -80,7 +86,11 @@ const ProductComponent = () => {
         setTotalPages(res.data.totalPages);
       })
       .catch(err => {
+        if (err.response.status === 401) {
+          navigate("/login")
+        }
         console.error('Error fetching products:', err);
+
       })
   }
 
@@ -119,9 +129,7 @@ const ProductComponent = () => {
     setCurrentPageDetail(pageNumber);
   };
 
-  const cancelShowProductDetail = () => {
-    setShowModal(false);
-  };
+
 
 
   const handleInputChange = (field, value) => {
@@ -170,7 +178,7 @@ const ProductComponent = () => {
 
   const handleUpdateProduct = (product) => {
     setProductToUpdate(product);
-    console.log(productToUpdate);
+    showProductDetail(product.id)
     setShowUpdateModal(true);
   };
 
@@ -179,8 +187,6 @@ const ProductComponent = () => {
   };
 
 
-
-  //them mới
 
   const handleAddProduct = () => {
     getTradeMarkList();
@@ -285,7 +291,15 @@ const ProductComponent = () => {
     // if (validateFormUpdate()) {
     const formData = new FormData();
     for (const key in productToUpdate) {
-      formData.append(key, productToUpdate[key]);
+      if (key !== 'categoryEntity') {
+        if (key === 'image' && typeof productToUpdate[key] === 'string') {
+          // Convert string image path to File object and append to FormData
+          // const file = new File([], productToUpdate[key]);
+          // formData.append(key, file);
+        } else {
+          formData.append(key, productToUpdate[key]);
+        }
+      }
     }
     productService.createProduct(formData)
       .then((res) => {
@@ -294,6 +308,7 @@ const ProductComponent = () => {
           position: "top-right",
           autoClose: 1000
         })
+        getProductList();
         setShowUpdateModal(false);
       }).catch(err => {
         toast.error("Cập nhật sản phẩm thất bại", {
@@ -406,6 +421,42 @@ const ProductComponent = () => {
 
     return Object.keys(newErrors).length === 0;
   };
+
+
+
+  const startEditing = (index) => {
+    setEditingIndex(index);
+    setSaveButtonVisible(true);
+
+  };
+
+  const updateQuantityProduct = (productDetails) => {
+    const json = {
+      nameProperty: productDetails.idProperty.name,
+      nameSize: productDetails.idSize.name,
+      productId: productDetails.idProduct.id,
+      quantity: productDetails.quantity
+    }
+    productService.updateQuantityProduct(json)
+      .then((res) => {
+        toast.success("Cập số lượng thành công", {
+          position: "top-right",
+          autoClose: 1000
+        })
+        setSaveButtonVisible(false);
+        setEditingIndex(null)
+      }).catch(err => {
+        toast.error("Cập số lượng thất bại", {
+          position: "top-right",
+          autoClose: 1000
+        })
+
+        console.log(err);
+      })
+  }
+
+
+
   return (
     <div class="container">
       <ToastContainer position="top-right"></ToastContainer>
@@ -483,9 +534,7 @@ const ProductComponent = () => {
                         <CCol md={4}>
                           <BsTrash onClick={() => backPage(product.id, product.nameProduct)}></BsTrash>
                         </CCol>
-                        <CCol md={4}>
-                          <BsFillEyeFill onClick={() => showProductDetail(product.id)}></BsFillEyeFill>
-                        </CCol>
+
                       </CRow>
                     </td>
 
@@ -501,48 +550,7 @@ const ProductComponent = () => {
               onChange={handlePageChange}
             />
 
-            <Modal show={showModal} onHide={cancelShowProductDetail} centered>
-              <Modal.Header closeButton>
-                <Modal.Title>Sản phẩm chi tiết</Modal.Title>
-              </Modal.Header>
-              <Modal.Body>
-                <Table striped bordered hover responsive>
-                  <thead>
-                    <tr style={{ textAlign: "center" }}>
-                      <th>STT</th>
-                      <th>Tên sản phẩm</th>
-                      <th>Số lượng</th>
-                      <th>Màu</th>
-                      <th>Kích cỡ</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {currentItemsDetail.map((productDetail, index) => (
-                      <tr key={index}>
-                        <td>{indexOfFirstItemDetail + index + 1}</td>
-                        <td>{productDetail.idProduct.nameProduct}</td>
-                        <td>{productDetail.quantity}</td>
-                        <td>{productDetail.idProperty.name}</td>
-                        <td>{productDetail.idSize.name}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
 
-                <PaginationCustom
-                  maxPageNumber={5}
-                  total={totalPagesDetail}
-                  perPage={itemsPerPage}
-                  onChange={handlePageChangeDetail}
-                  currentPageP={currentPageDetail}
-                />
-              </Modal.Body>
-              <Modal.Footer>
-                <Button variant="secondary" onClick={cancelShowProductDetail}>
-                  Hủy
-                </Button>
-              </Modal.Footer>
-            </Modal>
 
             <Modal show={showAddModal} onHide={cancelAddProduct}
               size="xl"
@@ -765,26 +773,7 @@ const ProductComponent = () => {
 
                     </Form.Group>
                   </CCol>
-                  <CCol md={6}>
-                    <Form.Group controlId="formTrademark">
-                      <Form.Label>Danh mục</Form.Label>
-                      <Form.Control
-                        as="select"
-                        name="idCategory"
-                        value={(productToUpdate.categoryEntity && productToUpdate.categoryEntity.id) ?? ""}
-                        onChange={handleChangeUpdate}
-                      >
-                        <option value={""}>Chọn danh mục</option>
-                        {trademarks.map((item) => (
-                          <option key={item.id} value={item.id}>
-                            {item.nameCategory}
-                          </option>
-                        ))}
-                        {errors.idCategory && <div className="error-message">{errors.idCategory}</div>}
 
-                      </Form.Control>
-                    </Form.Group>
-                  </CCol>
                   <CCol md={6}>
                     <Form.Group controlId="formQuantity">
                       <Form.Label>Trạng thái</Form.Label>
@@ -797,7 +786,7 @@ const ProductComponent = () => {
                     </Form.Group>
                   </CCol>
 
-                  {/* <CCol md={6}>
+                  <CCol md={6}>
                     <Form.Group controlId="formImage">
                       <Form.Label>Ảnh chính</Form.Label>
                       <Form.Control
@@ -807,9 +796,9 @@ const ProductComponent = () => {
                         onChange={handleChangeUpdate} />
                       {errors.imagePreview && <div className="error-message">{errors.imagePreview}</div>}
                     </Form.Group>
-                    <ImagePreviews imageURL={productToUpdate.imagePreview} />
+                    <ImagePreviews imageURL={productToUpdate.imagePreview ? productToUpdate.imagePreview : productToUpdate.image} />
                   </CCol>
-                  <CCol md={6}>
+                  {/* <CCol md={6}>
                     <Form.Group controlId="formImage">
                       <Form.Label>Chọn nhiều hình ảnh</Form.Label>
                       <Form.Control
@@ -835,7 +824,7 @@ const ProductComponent = () => {
                     {errors.description && <div className="error-message">{errors.description}</div>}
 
                   </Form.Group>
-                  <Form.Group controlId="formDescription">
+                  <Form.Group controlId="formDescription" className='mb-3'>
                     <Form.Label>Mô tả chi tiết</Form.Label>
                     <Form.Control
                       as="textarea"
@@ -848,6 +837,76 @@ const ProductComponent = () => {
                     {errors.descriptionDetail && <div className="error-message">{errors.descriptionDetail}</div>}
 
                   </Form.Group>
+                  <Form.Group controlId="formDescription">
+                    <Table bordered hover responsive>
+                      <thead>
+                        <tr style={{ textAlign: "center" }}>
+                          <th>STT</th>
+                          <th>Tên sản phẩm</th>
+                          <th>Số lượng</th>
+                          <th>Màu</th>
+                          <th>Kích cỡ</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {productDetail.map((productDetails, index) => (
+                          <tr key={index}>
+                            <td>{indexOfFirstItemDetails + index + 1}</td>
+                            <td>{productDetails.idProduct.nameProduct}</td>
+                            <td>
+                              {editingIndex === index ? (
+                                <Form.Control
+                                  type="number"
+                                  style={{ width: "90px" }}
+                                  value={productDetails.quantity}
+                                  onChange={(e) => {
+                                    const newQuantity = parseInt(e.target.value, 10);
+                                    setProductDetail((prevData) =>
+                                      prevData.map((prevItem, i) =>
+                                        i === index ? { ...prevItem, quantity: newQuantity } : prevItem
+                                      )
+                                    );
+                                  }}
+                                />
+                              ) : (
+                                productDetails.quantity
+                              )}
+                            </td>
+                            <td>{productDetails.idProperty.name}</td>
+                            <td>{productDetails.idSize.name}</td>
+                            <td>
+                              {isSaveButtonVisible && editingIndex === index ? (
+                                <Button
+                                  variant="success"
+                                  size="sm"
+                                  onClick={() => updateQuantityProduct(productDetails)}
+                                >
+                                  Lưu
+                                </Button>
+                              ) : (
+                                <Button
+                                  variant="primary"
+                                  size="sm"
+                                  onClick={() => startEditing(index)}
+                                >
+                                  Sửa
+                                </Button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+
+                    <PaginationCustom
+                      maxPageNumber={5}
+                      total={totalPagesDetail}
+                      perPage={itemsPerPage}
+                      onChange={handlePageChangeDetail}
+                      currentPageP={currentPageDetail}
+                    />
+                  </Form.Group>
+
                 </CRow>
               </Form>
             </Modal.Body>
