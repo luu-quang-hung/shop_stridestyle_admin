@@ -16,12 +16,13 @@ import {
     CTableDataCell,
     CFormTextarea,
     CFormSelect,
-    CForm
+    CForm,
+    CCardHeader,
+    CHeader
 } from '@coreui/react'
 import { BsTrash, BsX } from "react-icons/bs";
 //Service import
 import productService from 'src/views/service/product-service';
-import { CardBody, CardHeader } from 'react-bootstrap';
 import billService from 'src/views/service/bill-service';
 import propertyService from 'src/views/service/property-service';
 import { useNavigate } from "react-router-dom";
@@ -372,10 +373,10 @@ const SaleCounterComponent = () => {
                         showFilter &&
                         <div style={{ marginTop: '10px' }}>
                             <CCard>
-                                <CardHeader>
+                                <CHeader>
                                     <BsX size={20} style={{ float: 'right', cursor: 'pointer', fontWeight: 'bold' }} onClick={showFilterProduct}></BsX>
-                                </CardHeader>
-                                <CardBody style={{ overflowY: 'scroll', overflowX: 'hidden', maxHeight: '400px' }}>
+                                </CHeader>
+                                <CCardBody style={{ overflowY: 'scroll', overflowX: 'hidden', maxHeight: '400px' }}>
                                     {
                                         productFilter.map((el, indexProduct) => (
                                             <CRow key={indexProduct}>
@@ -421,7 +422,7 @@ const SaleCounterComponent = () => {
                                             </CRow>
                                         ))
                                     }
-                                </CardBody>
+                                </CCardBody>
                             </CCard>
                         </div>
                     }
