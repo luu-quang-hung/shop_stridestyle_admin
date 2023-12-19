@@ -272,6 +272,7 @@ const ProductComponent = () => {
             position: "top-right",
             autoClose: 1000
           })
+          getProductList();
           resetForm();
           setShowAddModal(false);
         }).catch(err => {
