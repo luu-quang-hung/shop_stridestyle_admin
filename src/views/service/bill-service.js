@@ -20,6 +20,13 @@ class BillService {
   createBill(payload) {
     return axios.post(API_URL + "create-bill-off", payload, {headers: authHeader()})
   }
+
+  doanhThuDay(){
+    return axios.get(API_URL + `revenue-for-current-month`, { headers: authHeader() })
+  }
+  countDay(){
+    return axios.get(API_URL + `count-status-daylly`, { headers: authHeader() })
+  }
 }
 
 export default new BillService();
