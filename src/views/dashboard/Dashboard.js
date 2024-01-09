@@ -1,4 +1,4 @@
-import React from 'react'
+import React,{useEffect,useState} from 'react'
 
 import {
 
@@ -15,12 +15,136 @@ import {
 
 
 } from '@coreui/react'
+import billService from '../service/bill-service'
 import { CChartLine } from '@coreui/react-chartjs'
 import CIcon from '@coreui/icons-react'
 import { cilList, cilShieldAlt, cilArrowTop, cilOptions } from '@coreui/icons';
-
-
+import ReactApexChart from 'react-apexcharts';
 const Dashboard = () => {
+  const [chartData, setChartData] = useState({
+    series: [{
+      name: "Doanh thu",
+      data: [] // Dữ liệu ban đầu trống
+    }],
+    options: {
+      chart: {
+        height: 350,
+        type: 'line'
+      },
+      xaxis: {
+        categories: [] // Categories ban đầu trống
+      },
+      title: {
+        text: 'Doanh thu các ngày trong tháng ',
+    },
+    }
+  });
+
+
+  const [chartDataCount, setChartDataCount] = useState({
+    series: [],
+    options: {
+      chart: {
+        type: 'bar',
+        height: 350,
+        stacked: true
+      },
+      title: {
+        text: 'Số lượng đơn hàng hủy và thành công',
+    },
+      xaxis: {
+        categories: []
+      },
+      // Các cấu hình khác nếu bạn cần
+    }
+  });
+
+  const getDaysInMonth = (year, month) => {
+    return new Date(year, month, 0).getDate();
+  };
+  
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth() + 1; // Trả về giá trị từ 1-12
+  const daysInMonth = Math.min(getDaysInMonth(currentYear, currentMonth), 30);
+  
+  const categories = Array.from({ length: daysInMonth }, (_, i) => `${i + 1}/${currentMonth}/${currentYear}`);
+  
+
+  const processChartData = (apiData) => {
+    const huyCounts = new Array(daysInMonth).fill(0);
+    const khachDaNhanHangCounts = new Array(daysInMonth).fill(0);
+  
+    apiData.forEach(item => {
+      const date = new Date(item.date);
+      const dayOfMonth = date.getDate(); // Lấy ngày trong tháng
+      if (date.getMonth() + 1 === currentMonth && date.getFullYear() === currentYear) {
+        huyCounts[dayOfMonth - 1] = item.huyCount;
+        khachDaNhanHangCounts[dayOfMonth - 1] = item.khachDaNhanHangCount;
+      }
+    });
+  
+    return { huyCounts, khachDaNhanHangCounts };
+  };
+  
+  const getCountDay = () => {
+    billService.countDay()
+      .then(res => {
+        const { huyCounts, khachDaNhanHangCounts } = processChartData(res.data);
+  
+        setChartDataCount({
+          series: [
+            { name: 'Hủy', data: huyCounts },
+            { name: 'Khách Đã Nhận Hàng', data: khachDaNhanHangCounts }
+          ],
+          options: {
+            ...chartData.options,
+            xaxis: { categories },
+            colors: ['#cecfcf', '#008FFB'] // 'red' cho 'Hủy', màu xanh cho 'Khách Đã Nhận Hàng'
+          }
+        });
+      })
+      .catch(err => {
+        console.error("Error fetching data: ", err);
+      });
+  };
+  
+  useEffect(() => {
+    getCountDay();
+  }, []);
+  // Hàm để lấy dữ liệu từ API và cập nhật biểu đồ
+  const getDoanhThuDay = () => {
+    billService.doanhThuDay()
+      .then(res => {
+        console.log("doanh thu day",res.data);
+        // Giả sử res.data là mảng dữ liệu từ API
+        const newCategories = res.data.map(item => item.date);
+        const newData = res.data.map(item => item.totalRevenue);
+
+        setChartData(prevChartData => ({
+          ...prevChartData,
+          series: [{ name: "Doanh thu", data: newData }],
+          options: {
+            ...prevChartData.options,
+            xaxis: { categories: newCategories }
+          }
+        }));
+      })
+      .catch(err => {
+        console.error("Error fetching data: ", err);
+      });
+  };
+
+  // Gọi API khi component được mount
+  useEffect(() => {
+    getDoanhThuDay();
+    getCountDay();
+
+  }, []);
+
+
+
+
   return (
     <>
       <CRow>
@@ -379,10 +503,24 @@ const Dashboard = () => {
       </CRow>
 
       <CCard className='mb-3'>
-        <CCardBody></CCardBody>
+        <CCardBody>
+          <ReactApexChart 
+        options={chartData.options} 
+        series={chartData.series} 
+        type="line" 
+        height={350} 
+      />
+        </CCardBody>
       </CCard>
       <CCard>
-        <CCardBody></CCardBody>
+        <CCardBody>
+        <ReactApexChart 
+        options={chartDataCount.options} 
+        series={chartDataCount.series} 
+        type="bar" 
+        height={350} 
+      />
+        </CCardBody>
       </CCard>
     </>
   )
