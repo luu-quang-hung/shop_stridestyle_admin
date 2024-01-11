@@ -26,7 +26,7 @@ const AppSidebar = () => {
       }}
     >
       <CSidebarBrand className="d-none d-md-flex" >
-      <img src="https://i.imgur.com/fwXANn1.png" alt="Image" width={200} />
+      <img src="https://i.imgur.com/0J7xZEN.png" alt="Image" width={200} />
 
       </CSidebarBrand>
       <CSidebarNav>
