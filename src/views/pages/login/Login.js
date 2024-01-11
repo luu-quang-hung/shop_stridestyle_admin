@@ -50,7 +50,7 @@ const Login = () => {
       .catch((error) => {
         // Login failed
         setLoading(false);
-        const resMessage = "Lỗi"
+        const resMessage = "Tài khoản mật khẩu không chính xác"
         setMessage(resMessage);
       });
   };
