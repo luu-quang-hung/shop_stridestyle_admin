@@ -1,4 +1,4 @@
-import React,{useEffect,useState} from 'react'
+import React, { useEffect, useState } from 'react'
 
 import {
 
@@ -36,7 +36,7 @@ const Dashboard = () => {
       },
       title: {
         text: 'Doanh thu các ngày trong tháng ',
-    },
+      },
     }
   });
 
@@ -51,7 +51,7 @@ const Dashboard = () => {
       },
       title: {
         text: 'Số lượng đơn hàng hủy và thành công',
-    },
+      },
       xaxis: {
         categories: []
       },
@@ -59,22 +59,24 @@ const Dashboard = () => {
     }
   });
 
+  const [countStatus, setCountStatus] = useState({})
+
   const getDaysInMonth = (year, month) => {
     return new Date(year, month, 0).getDate();
   };
-  
+
   const today = new Date();
   const currentYear = today.getFullYear();
   const currentMonth = today.getMonth() + 1; // Trả về giá trị từ 1-12
   const daysInMonth = Math.min(getDaysInMonth(currentYear, currentMonth), 30);
-  
+
   const categories = Array.from({ length: daysInMonth }, (_, i) => `${i + 1}/${currentMonth}/${currentYear}`);
-  
+
 
   const processChartData = (apiData) => {
     const huyCounts = new Array(daysInMonth).fill(0);
     const khachDaNhanHangCounts = new Array(daysInMonth).fill(0);
-  
+
     apiData.forEach(item => {
       const date = new Date(item.date);
       const dayOfMonth = date.getDate(); // Lấy ngày trong tháng
@@ -83,15 +85,15 @@ const Dashboard = () => {
         khachDaNhanHangCounts[dayOfMonth - 1] = item.khachDaNhanHangCount;
       }
     });
-  
+
     return { huyCounts, khachDaNhanHangCounts };
   };
-  
+
   const getCountDay = () => {
     billService.countDay()
       .then(res => {
         const { huyCounts, khachDaNhanHangCounts } = processChartData(res.data);
-  
+
         setChartDataCount({
           series: [
             { name: 'Hủy', data: huyCounts },
@@ -108,7 +110,7 @@ const Dashboard = () => {
         console.error("Error fetching data: ", err);
       });
   };
-  
+
   useEffect(() => {
     getCountDay();
   }, []);
@@ -116,7 +118,7 @@ const Dashboard = () => {
   const getDoanhThuDay = () => {
     billService.doanhThuDay()
       .then(res => {
-        console.log("doanh thu day",res.data);
+        console.log("doanh thu day", res.data);
         // Giả sử res.data là mảng dữ liệu từ API
         const newCategories = res.data.map(item => item.date);
         const newData = res.data.map(item => item.totalRevenue);
@@ -135,11 +137,21 @@ const Dashboard = () => {
       });
   };
 
+  const getCountStatus = () => {
+    billService.getCountStatus()
+      .then(res => {
+        setCountStatus(res.data.data[0])
+
+      }).catch(err => {
+        console.log(err);
+      })
+  }
+
   // Gọi API khi component được mount
   useEffect(() => {
     getDoanhThuDay();
     getCountDay();
-
+    getCountStatus();
   }, []);
 
 
@@ -154,7 +166,7 @@ const Dashboard = () => {
             color='warning'
             value={
               <>
-                9.000{' '}
+                {countStatus.chuaXacNhan}{' '}
                 <span className="fs-6 fw-normal">
                   (40.9% <CIcon icon={cilArrowTop} />)
                 </span>
@@ -230,7 +242,7 @@ const Dashboard = () => {
             color='primary'
             value={
               <>
-                9.000{' '}
+                {countStatus.daXacNhanVaDongGoi}{' '}
                 <span className="fs-6 fw-normal">
                   (40.9% <CIcon icon={cilArrowTop} />)
                 </span>
@@ -308,7 +320,7 @@ const Dashboard = () => {
 
             value={
               <>
-                9.000{' '}
+                {countStatus.daGiaoBenVanChuyen}{' '}
                 <span className="fs-6 fw-normal">
                   (40.9% <CIcon icon={cilArrowTop} />)
                 </span>
@@ -383,7 +395,7 @@ const Dashboard = () => {
 
             value={
               <>
-                $9.000{' '}
+                 {countStatus.khachDaNhanHang}{' '}
                 <span className="fs-6 fw-normal">
                   (40.9% <CIcon icon={cilArrowTop} />)
                 </span>
@@ -444,7 +456,7 @@ const Dashboard = () => {
             color='danger'
             value={
               <>
-                9.000{' '}
+                 {countStatus.huy}{' '}
                 <span className="fs-6 fw-normal">
                   (40.9% <CIcon icon={cilArrowTop} />)
                 </span>
@@ -504,22 +516,22 @@ const Dashboard = () => {
 
       <CCard className='mb-3'>
         <CCardBody>
-          <ReactApexChart 
-        options={chartData.options} 
-        series={chartData.series} 
-        type="line" 
-        height={350} 
-      />
+          <ReactApexChart
+            options={chartData.options}
+            series={chartData.series}
+            type="line"
+            height={350}
+          />
         </CCardBody>
       </CCard>
       <CCard>
         <CCardBody>
-        <ReactApexChart 
-        options={chartDataCount.options} 
-        series={chartDataCount.series} 
-        type="bar" 
-        height={350} 
-      />
+          <ReactApexChart
+            options={chartDataCount.options}
+            series={chartDataCount.series}
+            type="bar"
+            height={350}
+          />
         </CCardBody>
       </CCard>
     </>

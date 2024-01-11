@@ -27,6 +27,10 @@ class BillService {
   countDay(){
     return axios.get(API_URL + `count-status-daylly`, { headers: authHeader() })
   }
+  
+  getCountStatus(){
+    return axios.get(API_URL + `find-number-of-order-statuses`, { headers: authHeader() })
+  }
 }
 
 export default new BillService();
