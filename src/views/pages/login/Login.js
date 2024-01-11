@@ -56,16 +56,17 @@ const Login = () => {
   };
 
   return (
-    <div className="bg-light min-vh-100 d-flex flex-row align-items-center">
-      <CContainer>
-        <CRow className="justify-content-center">
-          <CCol md={8}>
+    <div className="bg-light min-vh-100 d-flex flex-row align-items-center" style={{  backgroundImage: `url("https://lh4.googleusercontent.com/s2LwPGcIefoHufjsLXHRzOpNxxqrZDXI0PscISwZp364ym9ZFb4bu1yAQe3I1e2BiTVHFAY4FEVC2P0CuoXFZA-yfRJ4y2SUUyMmL5rAPAi1NLUHPfrc-exr_2x2PeTk741eNM54")`,backgroundSize: 'cover',}}>
+      <CContainer >
+        <CRow className="justify-content-center" >
+          <CCol md={5}>
             <CCardGroup>
-              <CCard className="p-4">
+              <CCard className="p-4" style={{backgroundColor:"rgba(255, 255, 255, 0.5)" , color:"white"}}> 
+             
                 <CCardBody>
                   <CForm>
-                    <h1>Login</h1>
-                    <p className="text-medium-emphasis">Sign In to your account</p>
+                    <h1 >Login</h1>
+                    <br/>
                     <CInputGroup className="mb-3">
                       <CInputGroupText>
                         <CIcon icon={cilUser} />
@@ -90,8 +91,8 @@ const Login = () => {
                       />
                     </CInputGroup>
                     <CRow>
-                      <CCol xs={6}>
-                        <CButton color="primary" className="px-4" onClick={handleLogin}>
+                      <CCol xs={12} style={{textAlign:"center"}}>
+                        <CButton  color="light" style={{width:"200px"}} onClick={handleLogin}>
                           Login
                         </CButton>
                         {/* Display a loading spinner or message if loading */}
@@ -99,31 +100,12 @@ const Login = () => {
                         {/* Display error message if login fails */}
                         {message && <div style={{ color: 'red' }}>{message}</div>}
                       </CCol>
-                      <CCol xs={6} className="text-right">
-                        <CButton color="link" className="px-0">
-                          Forgot password?
-                        </CButton>
-                      </CCol>
+                      
                     </CRow>
                   </CForm>
                 </CCardBody>
               </CCard>
-              <CCard className="text-white bg-primary py-5" style={{ width: '44%' }}>
-                <CCardBody className="text-center">
-                  <div>
-                    <h2>Sign up</h2>
-                    <p>
-                      Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                      tempor incididunt ut labore et dolore magna aliqua.
-                    </p>
-                    <Link to="/register">
-                      <CButton color="primary" className="mt-3" active tabIndex={-1}>
-                        Register Now!
-                      </CButton>
-                    </Link>
-                  </div>
-                </CCardBody>
-              </CCard>
+              
             </CCardGroup>
           </CCol>
         </CRow>
