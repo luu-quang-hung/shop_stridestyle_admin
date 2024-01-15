@@ -43,7 +43,7 @@ const SaleCounterComponent = () => {
     const [invoice, setInvoice] = useState({
         totalPrice: 0,
         discount: 0,
-        vat: '10%',
+        vat: '1%',
         total: 0,
         note: null,
         phoneNumber: null,
@@ -85,10 +85,8 @@ const SaleCounterComponent = () => {
                 }
             })
             setProductList(dataByCategory);
-        }).catch(() => {
-            if (err.response.status === 401) {
-                navigate("/login")
-            }
+        }).catch(err => {
+           
         })
     }
 
@@ -275,6 +273,12 @@ const SaleCounterComponent = () => {
             setValidPhone(false);
         }
     }
+
+    const [amountGiven, setAmountGiven] = useState(0);
+    const calculateChange = () => {
+        return amountGiven - invoice.total; // Trừ đi tổng số tiền cần trả
+    };
+
     return (
         <>
             <ToastContainer position="top-right"></ToastContainer>
@@ -285,6 +289,7 @@ const SaleCounterComponent = () => {
                             <CCardBody>
                                 <CRow>
                                     <CCol md={12} className='d-flex'>
+                                        
                                         <CFormInput
                                             placeholder='Nhập sản phẩm tìm kiếm...'
                                             value={searchOption.query}
@@ -343,6 +348,16 @@ const SaleCounterComponent = () => {
                                     <CFormInput invalid={validPhone} required feedbackInvalid="Số điện thoại không hợp lệ" type='number' className='' min={0} value={invoice.phoneNumber} onChange={(e) => handlePhoneNumber(e)}></CFormInput>
                                     <CTable className='mt-2'>
                                         <CTableBody>
+                                        <CTableDataCell>Khách đưa:</CTableDataCell>
+
+                                            <CTableDataCell>
+                                                <CFormInput
+                                                    type="number"
+                                                    style={{ width: "120px" }}
+                                                    value={amountGiven}
+                                                    onChange={(e) => setAmountGiven(parseFloat(e.target.value))}
+                                                />
+                                            </CTableDataCell>
                                             <CTableRow>
                                                 <CTableDataCell>Tổng tiền hàng:</CTableDataCell>
                                                 <CTableDataCell>{formatterCurrency(invoice.totalPrice) || 0}</CTableDataCell>
@@ -358,6 +373,10 @@ const SaleCounterComponent = () => {
                                             <CTableRow>
                                                 <CTableDataCell>Khách cần trả</CTableDataCell>
                                                 <CTableDataCell>{formatterCurrency(invoice.total)}</CTableDataCell>
+                                            </CTableRow>
+                                            <CTableRow>
+                                                <CTableDataCell>Tiền trả khách</CTableDataCell>
+                                                <CTableDataCell>{formatterCurrency(calculateChange())|| 0} </CTableDataCell>
                                             </CTableRow>
                                         </CTableBody>
                                     </CTable>

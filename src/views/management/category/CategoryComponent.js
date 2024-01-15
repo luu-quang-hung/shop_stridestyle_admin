@@ -25,6 +25,17 @@ import 'react-toastify/dist/ReactToastify.css';
 import { confirmAlert } from "react-confirm-alert"; // Import
 import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
 
+
+const getUserRoles = () => {
+  const user = localStorage.getItem('userAdmin');
+  if (user) {
+    return JSON.parse(user).roles;
+  }
+  return [];
+};
+
+const currentUserRoles = getUserRoles();
+const isAdmin = currentUserRoles[0] === 'ROLE_ADMIN';
 const CategoryComponent = () => {
 
   const [trademark, setTrademark] = useState([]);
@@ -60,7 +71,7 @@ const CategoryComponent = () => {
         console.log(res.data);
       })
       .catch(error => {
-        if (err.response.status === 401) {
+        if (error.response.status === 401) {
           navigate("/login")
         }
         console.log("Error load data Trademark", error);
@@ -195,13 +206,15 @@ const CategoryComponent = () => {
       <ToastContainer position="top-right"></ToastContainer>
       <div class="nav">
         <CForm class="row g-3">
-          <CCol xs="auto">
-            <CFormLabel htmlFor="staticEmail2" >
-              <Button className="btn-loading" onClick={handleAddTrademark} >
-                Thêm mới
-              </Button>
-            </CFormLabel>
-          </CCol>
+          {isAdmin && (
+            <CCol xs="auto">
+              <CFormLabel htmlFor="staticEmail2" >
+                <Button className="btn-loading" onClick={handleAddTrademark} >
+                  Thêm mới
+                </Button>
+              </CFormLabel>
+            </CCol>
+          )}
           <CCol xs="auto">
             <CFormInput
               type="text"
@@ -222,7 +235,9 @@ const CategoryComponent = () => {
                   <th>STT</th>
                   <th>Tên danh mục</th>
                   <th>Giới tính</th>
-                  <th style={{ width: "10%" }}>Hành động</th>
+                  {isAdmin && (
+                    <th style={{ width: "10%" }}>Hành động</th>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -234,16 +249,20 @@ const CategoryComponent = () => {
                     </td>
                     <td>{trademark.name}</td>
                     <td>{trademark.gender ? "Nữ" : "Nam"}</td>
-                    <td>
-                      <CRow>
-                        <CCol md={4}>
-                          <BsFillPencilFill onClick={() => handleUpdateTrademark(trademark)}></BsFillPencilFill>
-                        </CCol>
-                        <CCol md={4}>
-                          <BsTrash onClick={() => confirmDeleteCategory(trademark.id, trademark.name)}></BsTrash>
-                        </CCol>
-                      </CRow>
-                    </td>
+                    
+                      {isAdmin && (
+                        <td>
+                        <CRow>
+                          <CCol md={4}>
+                            <BsFillPencilFill onClick={() => handleUpdateTrademark(trademark)}></BsFillPencilFill>
+                          </CCol>
+                          <CCol md={4}>
+                            <BsTrash onClick={() => confirmDeleteCategory(trademark.id, trademark.name)}></BsTrash>
+                          </CCol>
+                        </CRow>
+                        </td>
+                      )}
+                  
                   </tr>
                 ))}
               </tbody>

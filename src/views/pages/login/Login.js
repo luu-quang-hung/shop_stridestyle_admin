@@ -44,13 +44,13 @@ const Login = () => {
         }
          else {
           // Login success
-          navigate('/dashboard');
+          window.location.href = '/sale-counter';
         }
       })
       .catch((error) => {
         // Login failed
         setLoading(false);
-        const resMessage = "Tài khoản mật khẩu không chính xác"
+        const resMessage = "Tài Khoản mật khẩu không chính xác"
         setMessage(resMessage);
       });
   };

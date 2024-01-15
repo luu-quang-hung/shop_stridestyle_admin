@@ -32,6 +32,18 @@ import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import { useNavigate } from 'react-router-dom';
+
+const getUserRoles = () => {
+  const user = localStorage.getItem('userAdmin');
+  if (user) {
+    return JSON.parse(user).roles;
+  }
+  return [];
+};
+
+const currentUserRoles = getUserRoles();
+const isAdmin = currentUserRoles[0] === 'ROLE_ADMIN';
+
 const ProductComponent = () => {
   const navigate = new useNavigate();
   const format = new CurrencyFormatter();
@@ -77,7 +89,9 @@ const ProductComponent = () => {
 
   useEffect(() => {
     getProductList();
+    
   }, [productSearch.page]);
+
 
   const getProductList = () => {
     productService.findAllProduct(productSearch)
@@ -461,11 +475,14 @@ const ProductComponent = () => {
     <div class="container">
       <ToastContainer position="top-right"></ToastContainer>
       <CRow>
-        <CCol md={2}>
-          <Button className="btn-loading" onClick={handleAddProduct}>
-            Tạo mới
-          </Button>
-        </CCol>
+
+        {isAdmin && (
+          <CCol md={1}>
+            <Button className="btn-loading" onClick={handleAddProduct}>
+              Tạo mới
+            </Button>
+          </CCol>
+        )}
         <CCol md={2}>
           <CFormInput
             type="text"
@@ -531,9 +548,15 @@ const ProductComponent = () => {
                         <CCol md={4}>
                           <BsFillPencilFill onClick={() => handleUpdateProduct(product)}></BsFillPencilFill>
                         </CCol>
-                        <CCol md={4}>
-                          <BsTrash onClick={() => backPage(product.id, product.nameProduct)}></BsTrash>
-                        </CCol>
+
+                        {isAdmin && (
+                          <CCol md={1}>
+                            <CCol md={4}>
+                              <BsTrash onClick={() => backPage(product.id, product.nameProduct)}></BsTrash>
+                            </CCol>
+                          </CCol>
+                        )}
+
 
                       </CRow>
                     </td>
@@ -914,9 +937,13 @@ const ProductComponent = () => {
               <Button variant="secondary" onClick={cancelUpdateModal}>
                 Hủy
               </Button>
-              <Button variant="primary" onClick={handleSubmitUpdate}>
-                Cập nhật
-              </Button>
+                  
+      {isAdmin && (
+          <Button variant="primary" onClick={handleSubmitUpdate}>
+          Cập nhật
+        </Button>
+      )}
+           
             </Modal.Footer>
           </Modal>
         </CCardBody>

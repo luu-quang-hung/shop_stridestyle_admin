@@ -15,7 +15,10 @@ class UserService {
   //Customer
   getCustomer(json){
     return axios.post(API_URL+ 'find-all',json,{headers: authHeader() });
+  }
 
+  updateCustomer(json){
+    return axios.post(API_URL+ 'update',json,{headers: authHeader() });
   }
 
 }

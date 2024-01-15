@@ -13,8 +13,20 @@ import {
 } from '@coreui/icons';
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 import "./scss/_nav.scss"
+const getUserRoles = () => {
+  const user = localStorage.getItem('userAdmin');
+  if (user) {
+    return JSON.parse(user).roles;
+  }
+  return [];
+};
+
+const currentUserRoles = getUserRoles();
+
+const hasRole = (roles, requiredRole) => roles.includes(requiredRole);
 const _nav = [
-  {
+  
+  hasRole(currentUserRoles, 'ROLE_ADMIN') && {
     component: CNavItem,
     name: 'Thống kê',
     to: '/dashboard',
@@ -70,15 +82,17 @@ const _nav = [
     to: '/management/order',
     icon: <CIcon icon={cilCart} customClassName="nav-icon" ></CIcon>
   },
-  {
+
+  hasRole(currentUserRoles, 'ROLE_ADMIN') &&  {
     component: CNavItem,
     name: 'Tài khoản',
     to: '/management/customer',
     icon: <CIcon icon={cilAddressBook} customClassName="nav-icon" ></CIcon>
   },
 
+ 
+].filter(Boolean);
 
 
-]
 
 export default _nav

@@ -10,7 +10,7 @@ class AuthService {
       })
       .then(response => {
         if (response.data.accessToken) {
-          localStorage.setItem("user", JSON.stringify(response.data));
+          localStorage.setItem("userAdmin", JSON.stringify(response.data));
         }(error) => {
         }
 
@@ -19,7 +19,7 @@ class AuthService {
   }
 
   logout() {
-    localStorage.removeItem("user");
+    localStorage.removeItem("userAdmin");
   }
 
   register(username, email, password) {
@@ -31,7 +31,7 @@ class AuthService {
   }
 
   getCurrentUser() {
-    return JSON.parse(localStorage.getItem('user'));;
+    return JSON.parse(localStorage.getItem('userAdmin'));;
   }
 }
 

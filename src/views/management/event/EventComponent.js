@@ -27,6 +27,16 @@ import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
 
 import eventService from 'src/views/service/event-service';
 
+const getUserRoles = () => {
+  const user = localStorage.getItem('userAdmin');
+  if (user) {
+    return JSON.parse(user).roles;
+  }
+  return [];
+};
+
+const currentUserRoles = getUserRoles();
+const isAdmin = currentUserRoles[0] === 'ROLE_ADMIN';
 const EvenComponent = () => {
   const [event, setEvent] = useState([]);
   const [eventSearch, setEventSearch] = useState({
@@ -85,7 +95,7 @@ const EvenComponent = () => {
         setTotalPagesSize(res.data.totalPages);
       })
       .catch(error => {
-        if (err.response.status === 401) {
+        if (error.response.status === 401) {
           navigate("/login")
         }
         console.log("Error load data event", error);
@@ -296,15 +306,17 @@ const EvenComponent = () => {
         <CCol md="5">
           <div class="nav">
             <CForm class="row g-3">
-              <CCol xs="auto">
-                <CFormLabel htmlFor="staticEmail2" >
-                  <Button className="btn-loading"
-                    onClick={handleAddEvent}
-                  >
-                    Thêm mới
-                  </Button>
-                </CFormLabel>
-              </CCol>
+              {isAdmin && (
+                <CCol xs="auto">
+                  <CFormLabel htmlFor="staticEmail2" >
+                    <Button className="btn-loading"
+                      onClick={handleAddEvent}
+                    >
+                      Thêm mới
+                    </Button>
+                  </CFormLabel>
+                </CCol>
+              )}
               <CCol xs="auto">
                 <CFormInput
                   type="text"
@@ -326,7 +338,10 @@ const EvenComponent = () => {
                     <th>Tên</th>
                     <th>Ngày bắt đầu</th>
                     <th>Ngày kết thúc</th>
-                    <th>Hành động</th>
+                    {isAdmin && (
+                      <th>Hành động</th>
+                    )}
+
                   </tr>
                 </thead>
                 <tbody>
@@ -339,11 +354,13 @@ const EvenComponent = () => {
                       <td>{event.name}</td>
                       <td>{event.startDay}</td>
                       <td>{event.endDay}</td>
-                      <td>
-                        <CRow>
-                          <BsTrash onClick={() => confirmDeleteEvent(event.id_event, event.name)}></BsTrash>
-                        </CRow>
-                      </td>
+                      {isAdmin && (
+                        <td>
+                          <CRow>
+                            <BsTrash onClick={() => confirmDeleteEvent(event.id_event, event.name)}></BsTrash>
+                          </CRow>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -362,11 +379,13 @@ const EvenComponent = () => {
             <CForm class="row g-3">
               <CCol xs="auto">
                 <CFormLabel htmlFor="staticEmail2" >
-                  <Button className="btn-loading"
-                    onClick={handleAddVoucher}
-                  >
-                    Thêm mới
-                  </Button>
+                  {isAdmin && (
+                    <Button className="btn-loading"
+                      onClick={handleAddVoucher}
+                    >
+                      Thêm mới
+                    </Button>
+                  )}
                 </CFormLabel>
               </CCol>
               <CCol xs="auto">
@@ -386,12 +405,16 @@ const EvenComponent = () => {
                 <thead>
                   <tr>
                     <th>STT</th>
+                    <th>Mã giảm giá</th>
                     <th>Tên mã gg</th>
                     <th>Số tiền để giảm</th>
                     <th>Số tiền giảm</th>
                     <th>Giá trị đơn hàng tối thiểu</th>
                     <th>Sự kiện</th>
-                    <th style={{ width: "10%" }}>Actions</th>
+                    {isAdmin && (
+                      <th style={{ width: "10%" }}>Actions</th>
+                    )}
+
                   </tr>
                 </thead>
                 <tbody>
@@ -401,16 +424,20 @@ const EvenComponent = () => {
                         ? index + 1
                         : index + 1 + (currentPage - 1) * 10}
                       </td>
+                      <td>{voucher.id}</td>
+
                       <td>{voucher.name}</td>
                       <td>{voucher.amount}</td>
                       <td>{voucher.discount}</td>
                       <td>{voucher.minimumValue}</td>
                       <td>{voucher.eventEntity.name}</td>
-                      <td>
-                        <CRow>
-                          <BsTrash onClick={() => confirmDeleteVoucher(voucher.id, voucher.name)}></BsTrash>
-                        </CRow>
-                      </td>
+                      {isAdmin && (
+                        <td>
+                          <CRow>
+                            <BsTrash onClick={() => confirmDeleteVoucher(voucher.id, voucher.name)}></BsTrash>
+                          </CRow>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>

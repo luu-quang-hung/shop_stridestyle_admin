@@ -24,7 +24,7 @@ class App extends Component {
   };
 
   componentDidMount() {
-    const user = JSON.parse(localStorage.getItem('user'));
+    const user = JSON.parse(localStorage.getItem('userAdmin'));
     if (user && user.accessToken) {
     } else {
 

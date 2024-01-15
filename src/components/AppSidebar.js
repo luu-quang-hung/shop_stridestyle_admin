@@ -1,7 +1,7 @@
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 
-import { CSidebar, CSidebarBrand,CImage, CSidebarNav, CSidebarToggler } from '@coreui/react'
+import { CSidebar, CSidebarBrand, CImage, CSidebarNav, CSidebarToggler } from '@coreui/react'
 
 import { AppSidebarNav } from './AppSidebarNav'
 
@@ -26,7 +26,7 @@ const AppSidebar = () => {
       }}
     >
       <CSidebarBrand className="d-none d-md-flex" >
-      <img src="https://i.imgur.com/0J7xZEN.png" alt="Image" width={200} />
+        <img src="https://i.imgur.com/0J7xZEN.png" alt="Image" width={200} />
 
       </CSidebarBrand>
       <CSidebarNav>

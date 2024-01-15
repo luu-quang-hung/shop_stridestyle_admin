@@ -113,6 +113,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     getCountDay();
+    
   }, []);
   // Hàm để lấy dữ liệu từ API và cập nhật biểu đồ
   const getDoanhThuDay = () => {
