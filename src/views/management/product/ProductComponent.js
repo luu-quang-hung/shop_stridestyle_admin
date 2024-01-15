@@ -89,7 +89,7 @@ const ProductComponent = () => {
 
   useEffect(() => {
     getProductList();
-    
+
   }, [productSearch.page]);
 
 
@@ -315,15 +315,22 @@ const ProductComponent = () => {
         }
       }
     }
-    productService.createProduct(formData)
+    productService.updateProduct(formData)
       .then((res) => {
         console.log(res);
+        if (res.data.ecode === "420") {
+          toast.error(res.data.edesc, {
+            position: "top-right",
+            autoClose: 1000
+          })
+          return
+        }
         toast.success("Cập nhật sản phẩm thành công", {
           position: "top-right",
           autoClose: 1000
         })
         getProductList();
-        setShowUpdateModal(false);
+        // setShowUpdateModal(false);
       }).catch(err => {
         toast.error("Cập nhật sản phẩm thất bại", {
           position: "top-right",
@@ -796,7 +803,7 @@ const ProductComponent = () => {
 
                     </Form.Group>
                   </CCol>
-
+             
                   <CCol md={6}>
                     <Form.Group controlId="formQuantity">
                       <Form.Label>Trạng thái</Form.Label>
@@ -880,6 +887,7 @@ const ProductComponent = () => {
                               {editingIndex === index ? (
                                 <Form.Control
                                   type="number"
+                                  min={0}
                                   style={{ width: "90px" }}
                                   value={productDetails.quantity}
                                   onChange={(e) => {
@@ -937,13 +945,13 @@ const ProductComponent = () => {
               <Button variant="secondary" onClick={cancelUpdateModal}>
                 Hủy
               </Button>
-                  
-      {isAdmin && (
-          <Button variant="primary" onClick={handleSubmitUpdate}>
-          Cập nhật
-        </Button>
-      )}
-           
+
+              {isAdmin && (
+                <Button variant="primary" onClick={handleSubmitUpdate}>
+                  Cập nhật
+                </Button>
+              )}
+
             </Modal.Footer>
           </Modal>
         </CCardBody>

@@ -21,6 +21,11 @@ class ProductService {
     return axios.post(API_URL + 'save', data, { headers: authHeader() });
 
   }
+
+  updateProduct(data) {
+    return axios.post(API_URL + 'update', data, { headers: authHeader() });
+
+  }
   findCategory() {
     return axios.get(API_URL + 'find-id-name-category', { headers: authHeader() });
   }
