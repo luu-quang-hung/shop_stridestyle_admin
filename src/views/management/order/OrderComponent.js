@@ -425,6 +425,9 @@ const OrderComponent = () => {
             <CCol md={3} className='mb-3'>
               <CFormInput className='inputDetail' label="Tổng tiền thực nhận: " value={formatter.formatVND(orderDetail.downTotal) || null} readOnly></CFormInput>
             </CCol>
+            <CCol md={3} className='mb-3'>
+            <CFormInput className='inputDetail' label="Mã Vận Đơn GHN: " value={orderDetail.orderCode || null} readOnly></CFormInput>
+            </CCol>
             <CCol md={7} className='mb-3'>
               <CFormTextarea className='inputDetail' label="Ghi chú: " value={orderDetail.note || null} readOnly></CFormTextarea>
             </CCol>

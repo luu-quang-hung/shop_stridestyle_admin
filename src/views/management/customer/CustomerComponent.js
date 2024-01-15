@@ -46,6 +46,7 @@ const CustomerComponent = () => {
   const [showModal, setShowModal] = useState(false);
   const [trademarkToUpdate, setTrademarkToUpdate] = useState({});
 
+  const [showModalCreate, setShowModalCreate] = useState(false);
 
   useEffect(() => {
     getCustomerList();
@@ -146,6 +147,116 @@ const CustomerComponent = () => {
       })
   }
 
+  const handleAdd = () => {
+    setShowModalCreate(true);
+  };
+  const cancelAdd = () => {
+    setShowModalCreate(false);
+  };
+
+  const confirmCreate = () => {
+    alert("ok")
+  }
+
+  const [formData, setFormData] = useState({
+    address: '',
+    email: '',
+    fullName: '',
+    password: '',
+    confirmPassword: '',
+    phone: '',
+    username: ''
+  });
+
+  const [errors, setErrors] = useState({});
+
+  const validate = (name, value) => {
+    if (!value) {
+      return 'Không được để trống';
+    }
+    switch (name) {
+      case 'email':
+        if (!/\S+@\S+\.\S+/.test(value)) {
+          return 'Email không đúng định dạng';
+        }
+        break;
+      case 'password':
+        if (value.length < 6) {
+          return 'Mật khẩu phải trên 6 ký tự';
+        }
+        break;
+      case 'confirmPassword':
+        if (value !== formData.password) {
+          return 'Xác nhận mật khẩu không khớp';
+        }
+        break;
+      default:
+        return '';
+    }
+  };
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData({ ...formData, [name]: value });
+
+    if (name === 'password' || name === 'confirmPassword') {
+      if (formData.password !== formData.confirmPassword) {
+        setErrors(prevErrors => ({ ...prevErrors, confirmPassword: 'Xác nhận mật khẩu không khớp' }));
+      } else {
+        setErrors(prevErrors => ({ ...prevErrors, confirmPassword: '' }));
+      }
+    }
+
+    const errorMessage = validate(name, value);
+    setErrors({ ...errors, [name]: errorMessage });
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    let valid = true;
+    Object.keys(formData).forEach((key) => {
+      const error = validate(key, formData[key]);
+      if (error) {
+        setErrors(prevErrors => ({ ...prevErrors, [key]: error }));
+        valid = false;
+      }
+    });
+    if (valid) {
+      console.log(formData);
+      userService.createStaff(formData)
+        .then(res => {
+          if (res.data.ecode === "420") {
+            toast.error(res.data.edesc, {
+              position: "top-right",
+              autoClose: 1000
+            })
+            return
+          }
+          toast.success("Tạo tài khoản thành công", {
+            position: "top-right",
+            autoClose: 3000,
+          });
+          getCustomerList()
+          setShowModalCreate(false)
+          setFormData(
+            {
+              address: '',
+              email: '',
+              fullName: '',
+              password: '',
+              confirmPassword: '',
+              phone: '',
+              username: ''
+            }
+          )
+        }).catch(err => {
+          alert("Đăng kí thất bại");
+        })
+
+
+    }
+  };
+
   return (
     <CContainer>
       <ToastContainer position="top-right"></ToastContainer>
@@ -154,6 +265,11 @@ const CustomerComponent = () => {
         <CCardBody>
           <div class="nav">
             <CForm class="row g-3">
+              <CCol xs="auto">
+                <CButton type="submit" className="mb-3" onClick={handleAdd}>
+                  Tạo mới
+                </CButton>
+              </CCol>
               <CCol xs="auto">
                 <CFormInput type="text" id="nameProduct" placeholder="Email" />
               </CCol>
@@ -207,7 +323,7 @@ const CustomerComponent = () => {
                             <BsFillPencilFill onClick={() => handleUpdateTrademark(cus)}></BsFillPencilFill>
                           </CCol>
                           <CCol md={4}>
-                          <BsTrash onClick={() => confirmDeleteCategory(cus.id, cus.username)}></BsTrash>
+                            <BsTrash onClick={() => confirmDeleteCategory(cus.id, cus.username)}></BsTrash>
                           </CCol>
                         </CRow>
                       </td>
@@ -283,6 +399,116 @@ const CustomerComponent = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+
+
+      <Modal show={showModalCreate} onHide={cancelAdd} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Thêm mới sự kiện</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <form onSubmit={handleSubmit}>
+
+            <div className="mb-3 form-group">
+              <input
+                type="text"
+                className="form-control"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                placeholder="Tên tài khoản"
+              />
+              {errors.username && <div className="text-danger">{errors.username}</div>}
+
+            </div>
+
+            <div className="mb-3 form-group">
+              <input
+                type="password"
+                className="form-control"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Mật khẩu"
+              />
+              {errors.password && <div className="text-danger">{errors.password}</div>}
+            </div>
+            <div className="mb-3 form-group">
+              <input
+                type="password"
+                className="form-control"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="Xác nhận mật khẩu"
+              />
+              {errors.confirmPassword && <div className="text-danger">{errors.confirmPassword}</div>}
+            </div>
+
+
+            <div className="mb-3 form-group">
+              <input
+                type="text"
+                className="form-control"
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                placeholder="Địa chỉ"
+              />
+            </div>
+            {errors.address && <div className="text-danger">{errors.address}</div>}
+
+            <div className="mb-3 form-group">
+              <input
+                type="email"
+                className="form-control"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="Email"
+              />
+              {errors.email && <div className="text-danger">{errors.email}</div>}
+            </div>
+            <div className="mb-3 form-group">
+              <input
+                type="text"
+                className="form-control"
+                name="fullName"
+                value={formData.fullName}
+                onChange={handleChange}
+                placeholder="Họ và tên"
+              />
+            </div>
+            {errors.fullName && <div className="text-danger">{errors.fullName}</div>}
+
+
+
+            <div className="form-group">
+              <input
+                type="text"
+                className="form-control"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="Số điện thoại"
+              />
+              {errors.phone && <div className="text-danger">{errors.phone}</div>}
+            </div>
+
+          </form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={cancelAdd}>
+            Hủy
+          </Button>
+          <Button variant="primary"
+            onClick={handleSubmit}
+          >
+            Thêm mới
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+
     </CContainer>
   )
 }

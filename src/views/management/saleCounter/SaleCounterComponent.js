@@ -43,7 +43,7 @@ const SaleCounterComponent = () => {
     const [invoice, setInvoice] = useState({
         totalPrice: 0,
         discount: 0,
-        vat: '1%',
+        vat: '10%',
         total: 0,
         note: null,
         phoneNumber: null,

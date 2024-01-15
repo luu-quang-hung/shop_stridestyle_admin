@@ -2,7 +2,7 @@ import axios, { Axios } from 'axios';
 import authHeader from './auth-header';
 
 const API_URL = 'http://localhost:8080/customer-manager/';
-
+const API_URL_ACCOUNT = "http://localhost:8080/account-manager/"
 class UserService {
  
   //order
@@ -20,6 +20,11 @@ class UserService {
   updateCustomer(json){
     return axios.post(API_URL+ 'update',json,{headers: authHeader() });
   }
+
+  createStaff(json) {
+    return axios.post(API_URL_ACCOUNT + 'save-staff',json, { headers: authHeader() });
+  }
+
 
 }
 
