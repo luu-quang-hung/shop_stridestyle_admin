@@ -41,9 +41,7 @@ const Invoice = () => {
         billService.findByIdBill(id).then((res) => {
             setBill(res.data);
         }).catch(() => {
-            if (err.response.status === 401) {
-                navigate("/login")
-              }
+           
          })
     }
     function printInvoice() {

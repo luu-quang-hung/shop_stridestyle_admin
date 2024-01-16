@@ -119,7 +119,6 @@ const Dashboard = () => {
   const getDoanhThuDay = () => {
     billService.doanhThuDay()
       .then(res => {
-        console.log("doanh thu day", res.data);
         // Giả sử res.data là mảng dữ liệu từ API
         const newCategories = res.data.map(item => item.date);
         const newData = res.data.map(item => item.totalRevenue);

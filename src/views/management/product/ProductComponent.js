@@ -31,7 +31,6 @@ import CurrencyFormatter from 'src/common/CurrencyFormatter';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
-import { useNavigate } from 'react-router-dom';
 
 const getUserRoles = () => {
   const user = localStorage.getItem('userAdmin');
@@ -45,7 +44,6 @@ const currentUserRoles = getUserRoles();
 const isAdmin = currentUserRoles[0] === 'ROLE_ADMIN';
 
 const ProductComponent = () => {
-  const navigate = new useNavigate();
   const format = new CurrencyFormatter();
   const [productCreate, setProductCreate] = useState({
     nameProduct: '',
@@ -100,9 +98,7 @@ const ProductComponent = () => {
         setTotalPages(res.data.totalPages);
       })
       .catch(err => {
-        if (err.response.status === 401) {
-          navigate("/login")
-        }
+       
         console.error('Error fetching products:', err);
 
       })

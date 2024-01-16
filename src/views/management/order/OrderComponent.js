@@ -27,6 +27,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import ReactDatePicker from 'react-datepicker';
 import { format, addDays } from 'date-fns';
 import { utcToZonedTime } from 'date-fns-tz';
+import { confirmAlert } from "react-confirm-alert"; // Import
+import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
 
 import "react-datepicker/dist/react-datepicker.css";
 const OrderComponent = () => {
@@ -111,9 +113,7 @@ const OrderComponent = () => {
         setTotalPages(res.data.data.totalPages);
       })
       .catch(err => {
-        if (err.response.status === 401) {
-          navigate("/login")
-        }
+       
         console.error('Error fetching order:', err);
       })
   }
@@ -148,9 +148,30 @@ const OrderComponent = () => {
     const newStatus = event.target.value;
     setSelectedStatus(newStatus);
 
+    // Only show confirmAlert for "HUY" status, otherwise update directly
+    if (newStatus === "HUY") {
+      confirmAlert({
+        message: `Bạn vừa yêu cầu hủy đơn bạn có chắc chắn muốn hủy không ?`,
+        buttons: [
+          {
+            label: "Trở lại",
+            className: "stayPage",
+          },
+          {
+            label: "Xác nhận",
+            className: "leavePage",
+            onClick: () => updateBillStatus(newStatus), // Confirm action
+          },
+        ],
+      });
+    } else {
+      updateBillStatus(newStatus); // Direct update for other statuses
+    }
+  };
+  const updateBillStatus = (status) => {
     const json = {
       idBill: orderDetail.id,
-      status: newStatus
+      status: status
     }
     billService.updateBill(json)
       .then(res => {
@@ -158,12 +179,12 @@ const OrderComponent = () => {
           position: "top-right",
           autoClose: 1000
         })
+        getOrderList();
       })
       .catch(err => {
         console.error('Error fetching:', err);
       })
   };
-
   const statusStyles = {
     'CHUA_XAC_NHAN': {
       backgroundColor: "#f7f6ad",
@@ -426,7 +447,7 @@ const OrderComponent = () => {
               <CFormInput className='inputDetail' label="Tổng tiền thực nhận: " value={formatter.formatVND(orderDetail.downTotal) || null} readOnly></CFormInput>
             </CCol>
             <CCol md={3} className='mb-3'>
-            <CFormInput className='inputDetail' label="Mã Vận Đơn GHN: " value={orderDetail.orderCode || null} readOnly></CFormInput>
+              <CFormInput className='inputDetail' label="Mã Vận Đơn GHN: " value={orderDetail.orderCode || null} readOnly></CFormInput>
             </CCol>
             <CCol md={7} className='mb-3'>
               <CFormTextarea className='inputDetail' label="Ghi chú: " value={orderDetail.note || null} readOnly></CFormTextarea>

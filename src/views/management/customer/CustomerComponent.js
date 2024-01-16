@@ -56,12 +56,9 @@ const CustomerComponent = () => {
     UserService.getCustomer(customerSearch)
       .then(res => {
         setCustomer(res.data.content);
-        console.log(res.data.content);
       })
       .catch(err => {
-        if (error.response.status === 401) {
-          navigate("/login")
-        }
+       
         console.error('Error fetching Customer:', err);
       })
   }

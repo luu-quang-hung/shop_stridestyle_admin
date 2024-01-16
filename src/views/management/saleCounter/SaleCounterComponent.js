@@ -40,6 +40,8 @@ const SaleCounterComponent = () => {
     const [showFilter, setShowFilter] = useState(false);
     const [validated, setValidated] = useState(false);
     const [validPhone, setValidPhone] = useState(false);
+    const [amountGiven, setAmountGiven] = useState(0);
+
     const [invoice, setInvoice] = useState({
         totalPrice: 0,
         discount: 0,
@@ -86,7 +88,7 @@ const SaleCounterComponent = () => {
             })
             setProductList(dataByCategory);
         }).catch(err => {
-           
+
         })
     }
 
@@ -158,6 +160,14 @@ const SaleCounterComponent = () => {
         return phone.match(regexPhoneNumber) ? true : false;
     }
     function createBill(event) {
+
+        if (amountGiven != 0 && amountGiven < invoice.total) {
+            return toast.error("Khách không thể đưa ít tiền hơn tiền khách cần trả", {
+                position: "top-right",
+                autoClose: 1000
+            });
+
+        }
         const form = event.currentTarget;
         if (form.checkValidity() === false) {
             event.preventDefault()
@@ -180,6 +190,7 @@ const SaleCounterComponent = () => {
             }
         })
         invoice.downTotal = invoice.total;
+
         billService.createBill(invoice).then((res) => {
             console.log(res);
             if (res.data.ecode === "420") {
@@ -274,10 +285,14 @@ const SaleCounterComponent = () => {
         }
     }
 
-    const [amountGiven, setAmountGiven] = useState(0);
     const calculateChange = () => {
-        return amountGiven - invoice.total; // Trừ đi tổng số tiền cần trả
+        if (amountGiven === 0) {
+            return 0;
+        }
+
+        return amountGiven - invoice.total;
     };
+
 
     return (
         <>
@@ -289,7 +304,7 @@ const SaleCounterComponent = () => {
                             <CCardBody>
                                 <CRow>
                                     <CCol md={12} className='d-flex'>
-                                        
+
                                         <CFormInput
                                             placeholder='Nhập sản phẩm tìm kiếm...'
                                             value={searchOption.query}
@@ -348,7 +363,7 @@ const SaleCounterComponent = () => {
                                     <CFormInput invalid={validPhone} required feedbackInvalid="Số điện thoại không hợp lệ" type='number' className='' min={0} value={invoice.phoneNumber} onChange={(e) => handlePhoneNumber(e)}></CFormInput>
                                     <CTable className='mt-2'>
                                         <CTableBody>
-                                        <CTableDataCell>Khách đưa:</CTableDataCell>
+                                            <CTableDataCell>Khách đưa:</CTableDataCell>
 
                                             <CTableDataCell>
                                                 <CFormInput
@@ -376,7 +391,7 @@ const SaleCounterComponent = () => {
                                             </CTableRow>
                                             <CTableRow>
                                                 <CTableDataCell>Tiền trả khách</CTableDataCell>
-                                                <CTableDataCell>{formatterCurrency(calculateChange())|| 0} </CTableDataCell>
+                                                <CTableDataCell>{formatterCurrency(calculateChange()) || 0} </CTableDataCell>
                                             </CTableRow>
                                         </CTableBody>
                                     </CTable>

@@ -91,9 +91,7 @@ const PropertyComponent = () => {
         console.log("Property ", res.data);
       })
       .catch(error => {
-        if (error.response.status === 401) {
-          navigate("/login")
-        }
+       
         console.log("Error load data property", error);
       })
   }

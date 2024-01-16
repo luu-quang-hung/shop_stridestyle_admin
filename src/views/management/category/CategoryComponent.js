@@ -68,12 +68,9 @@ const CategoryComponent = () => {
       .then(res => {
         setTrademark(res.data.content)
         setTotalPages(res.data.totalPages);
-        console.log(res.data);
       })
       .catch(error => {
-        if (error.response.status === 401) {
-          navigate("/login")
-        }
+        
         console.log("Error load data Trademark", error);
       })
   }
@@ -90,7 +87,6 @@ const CategoryComponent = () => {
   const confirmAddTradeMark = () => {
     categoryService.createCategory(newTrademark)
       .then(res => {
-        console.log(res);
         toast.success("Tạo sản danh mục thành công", {
           position: "top-right",
           autoClose: 1000
@@ -136,7 +132,6 @@ const CategoryComponent = () => {
   const confirmUpdateTrademark = () => {
     categoryService.updateCategory(trademarkToUpdate)
       .then(res => {
-        console.log(res);
         toast.success("Cập nhật danh mục thành công", {
           position: "top-right",
           autoClose: 1000

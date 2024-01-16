@@ -95,9 +95,7 @@ const EvenComponent = () => {
         setTotalPagesSize(res.data.totalPages);
       })
       .catch(error => {
-        if (error.response.status === 401) {
-          navigate("/login")
-        }
+        
         console.log("Error load data event", error);
       })
   }
@@ -145,10 +143,24 @@ const EvenComponent = () => {
   };
   const handleChangeCreateVoucher = (event) => {
     const { name, value } = event.target;
+    if (name === 'discount' && (isNaN(value) || value < 1 || value > 100)) {
+      toast.error("Phần trăm chỉ từ 1-100", {
+        position: "top-right",
+        autoClose: 1000
+      })
+      return;
+    } if (name === 'minimumValue' && (isNaN(value))) {
+      toast.error("Tiền phải là số", {
+        position: "top-right",
+        autoClose: 1000
+      })
+      return;
+    };
     setCreateVoucher((prevInfo) => ({ ...prevInfo, [name]: value }));
-  };
 
+  }
   const confirmCreateEvent = () => {
+
     eventService.createEvent(createEvent)
       .then(res => {
         console.log(res);
@@ -179,6 +191,37 @@ const EvenComponent = () => {
   };
 
   const confirmCreateVoucher = () => {
+    console.log('====================================');
+    console.log(createVoucher);
+    console.log('====================================');
+    if (createVoucher.idEvent === '') {
+      toast.error("Phải chọn Sự Kiện", {
+        position: "top-right",
+        autoClose: 1000
+      })
+      return
+    }
+    else if (createVoucher.name === null) {
+      toast.error("Phải nhập tên mã giảm giá", {
+        position: "top-right",
+        autoClose: 1000
+      })
+      return;
+    } else if (createVoucher.discount === null) {
+      toast.error("Phải nhập số phần trăm giảm giá", {
+        position: "top-right",
+        autoClose: 1000
+      })
+      return;
+    }
+    else if (createVoucher.minimumValue === null) {
+      toast.error("Phải nhập giá trị tối thiểu", {
+        position: "top-right",
+        autoClose: 1000
+      })
+      return;
+    }
+
     eventService.createVoucher(createVoucher)
       .then(res => {
         toast.success("Tạo event thành công", {
@@ -514,6 +557,8 @@ const EvenComponent = () => {
                 value={createVoucher.idEvent}
                 onChange={handleChangeCreateVoucher}
               >
+                <option value={""}>Chọn event</option>
+
                 {event.map((item) => (
                   <option key={item.id_event} value={item.id_event}>
                     {item.name}
@@ -530,18 +575,13 @@ const EvenComponent = () => {
                 placeholder="Tên giảm giá"
               />
             </CCol>
+
             <CCol md={12} className='mb-3'>
               <CFormInput
-                label="Số tiền được giảm"
-                name="amount"
-                value={createVoucher.amount}
-                onChange={handleChangeCreateVoucher}
-                placeholder="Nhập số tiền"
-              />
-            </CCol>
-            <CCol md={12} className='mb-3'>
-              <CFormInput
-                label="Số tiền giảm"
+                type='number'
+                min={1}
+                max={100}
+                label="Số phần trăm giảm"
                 name="discount"
                 value={createVoucher.discount}
                 onChange={handleChangeCreateVoucher}
