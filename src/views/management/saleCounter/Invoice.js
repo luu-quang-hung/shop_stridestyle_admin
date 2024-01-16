@@ -28,9 +28,10 @@ import { Print, NoPrint } from "react-easy-print";
 
 
 const Invoice = () => {
+    const formatter = new CurrencyFormatter();
     const [searchParams] = useSearchParams();
     const [bill, setBill] = useState({});
-    const formatter = new CurrencyFormatter();
+  
     const navigator = useNavigate();
     useEffect(() => {
         const id = searchParams.get("id");
@@ -54,6 +55,23 @@ const Invoice = () => {
         pri.focus();
         pri.print();
     }
+
+    const getProductNamesJoined = () => {
+        if (bill && bill.oderDetailEntities && bill.oderDetailEntities.length > 0) {
+            return bill.oderDetailEntities.map(detail => {
+                const productName = detail.productDetailEntities.idProduct.nameProduct;
+                const productSize = detail.productDetailEntities.idSize.name;
+                const productColor = detail.productDetailEntities.idProperty.name;
+                const quantity = detail.quantity_oder;
+                return `${productName} (Kích cỡ: ${productSize}, Màu Sắc: ${productColor}, Số Lượng: ${quantity})`;
+            }).join('; ');
+        }
+        return '';
+    };
+
+    // Get the joined product names
+    const productNamesJoined = getProductNamesJoined();
+    console.log(productNamesJoined);
     return (
         <>
             <ToastContainer position="top-right"></ToastContainer>
@@ -68,7 +86,7 @@ const Invoice = () => {
                                         <div className='time-order' style={{ fontSize: '13px', color: '#2c384aae' }}>Thời gian: {moment(new Date()).format("DD-MM-YYYY HH:MM")}</div>
                                         <CImage src={orderImage} width={200} height={200}></CImage>
                                     </CCol>
-                                    <CCol md={12} style={{ padding: '10px' }}>
+<CCol md={12} style={{ padding: '10px' }}>
                                         <CTable>
                                             <CTableBody>
                                                 <CTableRow>
@@ -84,7 +102,11 @@ const Invoice = () => {
                                                     <CTableDataCell style={{ fontWeight: 'bold' }}>{bill.sdt}</CTableDataCell>
                                                 </CTableRow>
                                                 <CTableRow>
-                                                    <CTableDataCell>Nội dung </CTableDataCell>
+                                                    <CTableDataCell>Sản phẩm:  </CTableDataCell>
+                                                    <CTableDataCell style={{ fontWeight: 'bold' }}>{productNamesJoined}</CTableDataCell>
+                                                </CTableRow>
+                                                <CTableRow>
+                                                    <CTableDataCell>Ghi chú </CTableDataCell>
                                                     <CTableDataCell style={{ fontWeight: 'bold' }}>{bill.note}</CTableDataCell>
                                                 </CTableRow>
                                                 <CTableRow>
@@ -102,7 +124,7 @@ const Invoice = () => {
                                 </CCol>
                                 <CCol md={6}>
                                     <CButton color='success' style={{ width: '100%' }} onClick={() => navigator(-1)}>Quầy sản phẩm</CButton>
-                                </CCol>
+</CCol>
                             </CRow>
                         </CCardBody>
                     </CCard>

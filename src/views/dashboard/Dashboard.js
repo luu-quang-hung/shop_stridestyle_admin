@@ -169,7 +169,7 @@ const Dashboard = () => {
               <>
                 {countStatus.chuaXacNhan}{' '}
                 <span className="fs-6 fw-normal">
-                  (40.9% <CIcon icon={cilArrowTop} />)
+                 
                 </span>
               </>
             }
@@ -245,7 +245,6 @@ const Dashboard = () => {
               <>
                 {countStatus.daXacNhanVaDongGoi}{' '}
                 <span className="fs-6 fw-normal">
-                  (40.9% <CIcon icon={cilArrowTop} />)
                 </span>
               </>
             }
@@ -323,7 +322,6 @@ const Dashboard = () => {
               <>
                 {countStatus.daGiaoBenVanChuyen}{' '}
                 <span className="fs-6 fw-normal">
-                  (40.9% <CIcon icon={cilArrowTop} />)
                 </span>
               </>
             }
@@ -398,7 +396,6 @@ const Dashboard = () => {
               <>
                  {countStatus.khachDaNhanHang}{' '}
                 <span className="fs-6 fw-normal">
-                  (40.9% <CIcon icon={cilArrowTop} />)
                 </span>
               </>
             }
@@ -459,7 +456,6 @@ const Dashboard = () => {
               <>
                  {countStatus.huy}{' '}
                 <span className="fs-6 fw-normal">
-                  (40.9% <CIcon icon={cilArrowTop} />)
                 </span>
               </>
             }

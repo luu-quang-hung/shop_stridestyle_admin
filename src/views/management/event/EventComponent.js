@@ -407,7 +407,7 @@ const EvenComponent = () => {
                     <th>STT</th>
                     <th>Mã giảm giá</th>
                     <th>Tên mã gg</th>
-                    <th>Số tiền để giảm</th>
+                    <th>Số lượng </th>
                     <th>Số tiền giảm</th>
                     <th>Giá trị đơn hàng tối thiểu</th>
                     <th>Sự kiện</th>

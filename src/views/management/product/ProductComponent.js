@@ -335,7 +335,7 @@ const ProductComponent = () => {
           autoClose: 1000
         })
         getProductList();
-        // setShowUpdateModal(false);
+        setShowUpdateModal(false);
       }).catch(err => {
         toast.error("Cập nhật sản phẩm thất bại", {
           position: "top-right",
