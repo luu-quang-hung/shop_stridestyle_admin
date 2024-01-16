@@ -144,8 +144,6 @@ const ProductComponent = () => {
   };
 
 
-
-
   const handleInputChange = (field, value) => {
     const nullValue = value === 'null' ? null : value;
     setProductSearch((prevSearchBill) => ({
@@ -282,6 +280,13 @@ const ProductComponent = () => {
       }
       productService.createProduct(formData)
         .then((res) => {
+          if (res.data.ecode === "420") {
+            toast.error(res.data.edesc, {
+              position: "top-right",
+              autoClose: 1000
+            })
+            return
+          }
           toast.success("Tạo sản phẩm thành công", {
             position: "top-right",
             autoClose: 1000
@@ -803,7 +808,7 @@ const ProductComponent = () => {
 
                     </Form.Group>
                   </CCol>
-             
+
                   <CCol md={6}>
                     <Form.Group controlId="formQuantity">
                       <Form.Label>Trạng thái</Form.Label>
