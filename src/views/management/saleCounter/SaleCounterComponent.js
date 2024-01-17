@@ -26,8 +26,6 @@ import productService from 'src/views/service/product-service';
 import billService from 'src/views/service/bill-service';
 import propertyService from 'src/views/service/property-service';
 import { useNavigate } from "react-router-dom";
-import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
-import { confirmAlert } from "react-confirm-alert"; // Import
 
 const SaleCounterComponent = () => {
     const navigator = useNavigate();

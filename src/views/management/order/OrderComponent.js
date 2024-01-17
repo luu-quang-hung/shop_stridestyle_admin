@@ -144,6 +144,9 @@ const OrderComponent = () => {
 
   }
 
+  const checkout = () =>{
+    window.location.reload();  }
+
   const handleStatusChange = (event) => {
     const newStatus = event.target.value;
     setSelectedStatus(newStatus);
@@ -156,6 +159,7 @@ const OrderComponent = () => {
           {
             label: "Trở lại",
             className: "stayPage",
+            onClick: () => checkout(), // Confirm action
           },
           {
             label: "Xác nhận",

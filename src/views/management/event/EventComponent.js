@@ -27,7 +27,7 @@ import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import eventService from 'src/views/service/event-service';
-
+import '../../css/product.css'
 const getUserRoles = () => {
   const user = localStorage.getItem('userAdmin');
   if (user) {
@@ -139,9 +139,16 @@ const EvenComponent = () => {
   };
 
   const handleChangeCreateEvent = (event) => {
-    const { name, value } = event.target;
-    setCreateEvent((prevInfo) => ({ ...prevInfo, [name]: value }));
+    if (event instanceof Date) {
+      // Handle Date object for date picker
+      setCreateEvent((prevInfo) => ({ ...prevInfo, [event.target.name]: event }));
+    } else {
+      // Handle regular input change
+      const { name, value } = event.target;
+      setCreateEvent((prevInfo) => ({ ...prevInfo, [name]: value }));
+    }
   };
+
   const handleChangeCreateVoucher = (event) => {
     const { name, value } = event.target;
     if (name === 'discount' && (isNaN(value) || value < 1 || value > 100)) {
@@ -184,7 +191,7 @@ const EvenComponent = () => {
           startDay: ""
         })
       }).catch(err => {
-        toast.error("Tạo màu thất bại", {
+        toast.error("Tạo even thất bại", {
           position: "top-right",
           autoClose: 1000
         })
@@ -239,7 +246,7 @@ const EvenComponent = () => {
           name: ""
         })
       }).catch(err => {
-        toast.error("Tạo màu thất bại", {
+        toast.error("Tạo voucher thất bại", {
           position: "top-right",
           autoClose: 1000
         })
@@ -589,22 +596,26 @@ const EvenComponent = () => {
                 placeholder="Nhập tên sự kiện"
               />
             </CCol>
-            <CCol md={12} className='mb-3'>
-              <CFormInput
-                label="Ngày Bắt đầu"
-                name="startDay"
-                value={createEvent.startDay}
-                onChange={handleChangeCreateEvent}
-                placeholder="Nhập ngày bắt đầu"
-              />
+            <CCol md={12}><label>Ngày Bắt đầu</label>
             </CCol>
             <CCol md={12} className='mb-3'>
-              <CFormInput
-                label="Ngày Kết thúc"
-                name="endDay"
-                value={createEvent.endDay}
-                onChange={handleChangeCreateEvent}
-                placeholder="Nhập ngày kết thúc"
+              <DatePicker
+                className='dateInput'
+                selected={createEvent.startDay}
+                onChange={(date) => handleChangeCreateEvent({ target: { name: 'startDay', value: date } })}
+                dateFormat="yyyy-MM-dd"
+                placeholderText="Nhập ngày bắt đầu"
+              />
+            </CCol>
+            <CCol md={12}>   <label>Ngày Kết thúc</label>
+            </CCol>
+            <CCol md={12} className='mb-3'>
+              <DatePicker
+                className='dateInput'
+                selected={createEvent.endDay}
+                onChange={(date) => handleChangeCreateEvent({ target: { name: 'endDay', value: date } })}
+                dateFormat="yyyy-MM-dd"
+                placeholderText="Nhập ngày kết thúc"
               />
             </CCol>
           </CRow>
@@ -662,6 +673,17 @@ const EvenComponent = () => {
                 label="Số phần trăm giảm"
                 name="discount"
                 value={createVoucher.discount}
+                onChange={handleChangeCreateVoucher}
+                placeholder="Nhập số tiền giảm"
+              />
+            </CCol>
+            <CCol md={12} className='mb-3'>
+              <CFormInput
+                type='number'
+                min={1}
+                label="Số lượng voucher"
+                name="amount"
+                value={createVoucher.amount}
                 onChange={handleChangeCreateVoucher}
                 placeholder="Nhập số tiền giảm"
               />
@@ -782,6 +804,17 @@ const EvenComponent = () => {
                 label="Số phần trăm giảm"
                 name="discount"
                 value={updateVoucher.discount}
+                onChange={handleChangeUpdateVoucher}
+                placeholder="Nhập số tiền giảm"
+              />
+            </CCol>
+            <CCol md={12} className='mb-3'>
+              <CFormInput
+                type='number'
+                min={1}
+                label="Số lượng mã giảm"
+                name="amount"
+                value={updateVoucher.amount}
                 onChange={handleChangeUpdateVoucher}
                 placeholder="Nhập số tiền giảm"
               />
