@@ -406,13 +406,14 @@ const ProductComponent = () => {
       newErrors.quantity = 'Vui lòng nhập số lượng';
     } if (!productCreate.imagePreview) {
       newErrors.imagePreview = 'Vui lòng chọn ảnh gốc';
-    } if (listImages.length === 0) {
-      newErrors.listImages = 'Vui lòng thêm ít nhất 1 ảnh phụ';
-    } if (!productCreate.description) {
-      newErrors.description = 'Vui lòng ghi mô tả';
-    } if (!productCreate.descriptionDetail) {
-      newErrors.descriptionDetail = 'Vui lòng ghi mô tả chi tiết';
-    }
+    } 
+    // if (listImages.length === 0) {
+    //   newErrors.listImages = 'Vui lòng thêm ít nhất 1 ảnh phụ';
+    // } if (!productCreate.description) {
+    //   newErrors.description = 'Vui lòng ghi mô tả';
+    // } if (!productCreate.descriptionDetail) {
+    //   newErrors.descriptionDetail = 'Vui lòng ghi mô tả chi tiết';
+    // }
 
     setErrors(newErrors);
 

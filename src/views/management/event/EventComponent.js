@@ -16,7 +16,7 @@ import {
   CContainer
 } from '@coreui/react'
 import { BsTrash, BsFillPencilFill } from "react-icons/bs";
-import { Container, FormControl, InputGroup } from 'react-bootstrap';
+import { Col, Container, FormControl, InputGroup } from 'react-bootstrap';
 import categoryService from 'src/views/service/category-service';
 import { Table, Pagination, Button, Modal, Form } from 'react-bootstrap';
 import PaginationCustom from 'src/views/pagination/PaginationCustom';
@@ -75,7 +75,7 @@ const EvenComponent = () => {
   });
 
   const [updateEvent, setUpdateEvent] = useState({
-    idProperty: null,
+    id_event: null,
     name: null
   });
   const [updateVoucher, setUpdateVoucher] = useState({
@@ -95,13 +95,13 @@ const EvenComponent = () => {
         setTotalPagesSize(res.data.totalPages);
       })
       .catch(error => {
-        
+
         console.log("Error load data event", error);
       })
   }
 
   const getAllVoucher = () => {
-    eventService.findAllVoucher(eventSearch)
+    eventService.findAllVoucher(voucherSearch)
       .then(res => {
         setVoucher(res.data.content)
         setTotalPages(res.data.totalPages);
@@ -342,6 +342,71 @@ const EvenComponent = () => {
     }));
   };
 
+  const handleUpdateEvent = (vc) => {
+    setUpdateEvent(vc);
+    setShowModalUpdateEven(true);
+  };
+
+  const handleUpdateVoucher = (size) => {
+    setUpdateVoucher(size);
+    setShowModalUpdateVoucher(true);
+  };
+
+  const handleChangeUpdateEvent = (event) => {
+    const { name, value } = event.target;
+    setUpdateEvent((prevInfo) => ({ ...prevInfo, [name]: value }));
+  }
+
+  const handleChangeUpdateVoucher = (event) => {
+    const { name, value } = event.target;
+    setUpdateVoucher((prevInfo) => ({ ...prevInfo, [name]: value }));
+  }
+
+  const cancelUpdateEvent = () => {
+    setShowModalUpdateEven(false)
+  };
+
+  const cancelUpdateVoucher = () => {
+    setShowModalUpdateVoucher(false)
+  };
+
+  const confirmUpdateEvent = () => {
+    eventService.updateEvent(updateEvent)
+      .then(res => {
+        console.log(res);
+        toast.success("Cập nhật event thành công", {
+          position: "top-right",
+          autoClose: 1000
+        })
+        getAllEvent();;
+        setShowModalUpdateEven(false)
+      }).catch(err => {
+        console.log(err);
+        toast.error("Cập nhật event thất bại", {
+          position: "top-right",
+          autoClose: 1000
+        })
+      })
+  };
+
+  const confirmUpdateVoucher = () => {
+    eventService.updateVoucher(updateVoucher)
+      .then(res => {
+        console.log(res);
+        toast.success("Cập nhật voucher thành công", {
+          position: "top-right",
+          autoClose: 1000
+        })
+        getAllVoucher();;
+        setShowModalUpdateVoucher(false)
+      }).catch(err => {
+        console.log(err);
+        toast.error("Cập nhật voucher thất bại", {
+          position: "top-right",
+          autoClose: 1000
+        })
+      })
+  };
   return (
     <CContainer>
       <ToastContainer position="top-right"></ToastContainer>
@@ -400,7 +465,11 @@ const EvenComponent = () => {
                       {isAdmin && (
                         <td>
                           <CRow>
-                            <BsTrash onClick={() => confirmDeleteEvent(event.id_event, event.name)}></BsTrash>
+                            <Col>                            <BsFillPencilFill onClick={() => handleUpdateEvent(event)}></BsFillPencilFill>
+                            </Col>
+                            <Col><BsTrash onClick={() => confirmDeleteEvent(event.id_event, event.name)}></BsTrash></Col>
+
+
                           </CRow>
                         </td>
                       )}
@@ -477,7 +546,15 @@ const EvenComponent = () => {
                       {isAdmin && (
                         <td>
                           <CRow>
-                            <BsTrash onClick={() => confirmDeleteVoucher(voucher.id, voucher.name)}></BsTrash>
+                            <Col>
+                              <BsFillPencilFill onClick={() => handleUpdateVoucher(voucher)}></BsFillPencilFill>
+                            </Col>
+
+                            <Col>
+                              <BsTrash onClick={() => confirmDeleteVoucher(voucher.id, voucher.name)}></BsTrash>
+                            </Col>
+
+
                           </CRow>
                         </td>
                       )}
@@ -612,6 +689,124 @@ const EvenComponent = () => {
       </Modal>
 
 
+
+      <Modal show={showModalUpdateEven} onHide={cancelUpdateEvent} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Cập nhật sự kiện</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <CRow>
+            <CCol md={12} className='mb-3'>
+              <CFormInput
+                label="Id sự kiện"
+                name="id_event"
+                value={updateEvent.id_event}
+                onChange={handleChangeUpdateEvent}
+                placeholder="Nhập tên sự kiện"
+              />
+            </CCol>
+            <CCol md={12} className='mb-3'>
+              <CFormInput
+                label="Tên sự kiện"
+                name="name"
+                value={updateEvent.name}
+                onChange={handleChangeUpdateEvent}
+                placeholder="Nhập tên sự kiện"
+              />
+            </CCol>
+            <CCol md={12} className='mb-3'>
+              <CFormInput
+                label="Ngày Bắt đầu"
+                name="startDay"
+                value={updateEvent.startDay}
+                onChange={handleChangeUpdateEvent}
+                placeholder="Nhập ngày bắt đầu"
+              />
+            </CCol>
+            <CCol md={12} className='mb-3'>
+              <CFormInput
+                label="Ngày Kết thúc"
+                name="endDay"
+                value={updateEvent.endDay}
+                onChange={handleChangeUpdateEvent}
+                placeholder="Nhập ngày kết thúc"
+              />
+            </CCol>
+          </CRow>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={cancelUpdateEvent}>
+            Hủy
+          </Button>
+          <Button variant="primary"
+            onClick={confirmUpdateEvent}
+          >
+            Cập nhật
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal show={showModalUpdateVoucher} onHide={cancelUpdateVoucher} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Cập nhật mã giảm giá</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <CRow>
+            <CCol md={12} className='mb-3'>
+              <CFormInput
+                label="id"
+                name="name"
+                value={updateVoucher.id}
+                onChange={handleChangeUpdateVoucher}
+                placeholder="Tên giảm giá"
+                readOnly
+                disabled
+              />
+            </CCol>
+            <CCol md={12} className='mb-3'>
+              <CFormInput
+                label="Tên mã giảm giá"
+                name="name"
+                value={updateVoucher.name}
+                onChange={handleChangeUpdateVoucher}
+                placeholder="Tên giảm giá"
+              />
+            </CCol>
+
+            <CCol md={12} className='mb-3'>
+              <CFormInput
+                type='number'
+                min={1}
+                max={100}
+                label="Số phần trăm giảm"
+                name="discount"
+                value={updateVoucher.discount}
+                onChange={handleChangeUpdateVoucher}
+                placeholder="Nhập số tiền giảm"
+              />
+            </CCol>
+            <CCol md={12} className='mb-3'>
+              <CFormInput
+                label="Giá trị đơn hàng tối thiểu"
+                name="minimumValue"
+                value={updateVoucher.minimumValue}
+                onChange={handleChangeUpdateVoucher}
+                placeholder="Nhập giá trị đơn hàng tối thiểu"
+              />
+            </CCol>
+          </CRow>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={cancelUpdateVoucher}>
+            Hủy
+          </Button>
+          <Button variant="primary"
+            onClick={confirmUpdateVoucher}
+          >
+            Cập nhật
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
     </CContainer>
   )
