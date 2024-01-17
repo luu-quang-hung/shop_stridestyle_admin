@@ -58,7 +58,7 @@ const CustomerComponent = () => {
         setCustomer(res.data.content);
       })
       .catch(err => {
-       
+
         console.error('Error fetching Customer:', err);
       })
   }
@@ -299,34 +299,33 @@ const CustomerComponent = () => {
                 </tr>
               </thead>
               <tbody>
-                {customer.map((cus, index) => (
-                  <tr key={index}>
-                    <td> {currentPage < 2
-                      ? index + 1
-                      : index + 1 + (currentPage - 1) * 10}
-                    </td>
-                    <td>{cus.userEntity?.username}</td>
+                {customer.filter(cus => cus.userEntity?.roles.some(role => role.name === 'ROLE_STAFF'))
+                  .map((cus, index) => (
+                    <tr key={index}>
+                      <td> {currentPage < 2 ? index + 1 : index + 1 + (currentPage - 1) * 10} </td>
+                      <td>{cus.userEntity?.username}</td>
+                      <td>{cus.fullName}</td>
+                      <td>{cus.address}</td>
+                      <td>{cus.phone}</td>
+                      <td>{cus.email || "No email available"}</td>
+                      <td>{cus.userEntity?.roles[0].name}</td>
 
-                    <td>{cus.fullName}</td>
-                    <td>{cus.address}</td>
-                    <td>{cus.phone}</td>
-                    <td>{cus.email || "No email available"}</td>
-                    <td>{cus.userEntity?.roles[0].name}</td>
+                      {isAdmin && (
+                        <td>
+                          <CRow>
+                            <CCol md={4}>
+                              <BsFillPencilFill onClick={() => handleUpdateTrademark(cus)}></BsFillPencilFill>
+                            </CCol>
+                            <CCol md={4}>
+                              <BsTrash onClick={() => confirmDeleteCategory(cus.id, cus.username)}></BsTrash>
+                            </CCol>
+                          </CRow>
+                        </td>
+                      )}
+                    </tr>
+                  ))
+                }
 
-                    {isAdmin && (
-                      <td>
-                        <CRow>
-                          <CCol md={4}>
-                            <BsFillPencilFill onClick={() => handleUpdateTrademark(cus)}></BsFillPencilFill>
-                          </CCol>
-                          <CCol md={4}>
-                            <BsTrash onClick={() => confirmDeleteCategory(cus.id, cus.username)}></BsTrash>
-                          </CCol>
-                        </CRow>
-                      </td>
-                    )}
-                  </tr>
-                ))}
               </tbody>
             </CTable>
             <PaginationCustom
