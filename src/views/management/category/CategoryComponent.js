@@ -165,6 +165,7 @@ const CategoryComponent = () => {
         buttons: [
           {
             label: "Trở lại",
+            onClick: () => alert("ok"),
             className: "stayPage",
           },
           {

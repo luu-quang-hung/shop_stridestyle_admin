@@ -25,6 +25,10 @@ class UserService {
     return axios.post(API_URL_ACCOUNT + 'save-staff',json, { headers: authHeader() });
   }
 
+  deleteCustomer(json) {
+    return axios.post(API_URL + 'delete',json, { headers: authHeader() });
+  }
+
 
 }
 

@@ -24,7 +24,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { confirmAlert } from "react-confirm-alert"; // Import
 import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
-
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import eventService from 'src/views/service/event-service';
 
 const getUserRoles = () => {

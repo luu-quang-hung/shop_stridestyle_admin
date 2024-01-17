@@ -22,7 +22,8 @@ import PaginationCustom from 'src/views/pagination/PaginationCustom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import userService from 'src/views/service/user.service';
-
+import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
+import { confirmAlert } from "react-confirm-alert"; // Import
 const getUserRoles = () => {
   const user = localStorage.getItem('userAdmin');
   if (user) {
@@ -108,7 +109,7 @@ const CustomerComponent = () => {
     if (idCate) {
       confirmAlert({
         message:
-          `Bạn có chắc chắn muốn xóa danh mục ` + nameCate + ` không ?`,
+          `Bạn có chắc chắn muốn tài khoản?`,
         buttons: [
           {
             label: "Trở lại",
@@ -127,16 +128,16 @@ const CustomerComponent = () => {
     const json = {
       id: idCate
     }
-    categoryService.deleteCategory(json)
+    userService.deleteCustomer(json)
       .then(res => {
-        toast.success("Xóa danh mục thành công", {
+        toast.success("Xóa tài khoản thành công", {
           position: "top-right",
           autoClose: 3000,
         });
-        getTradeMarkList();
+        getCustomerList();
       })
       .catch(error => {
-        toast.error("Xóa danh mục thất bại", {
+        toast.error("Xóa tài khoản thất bại", {
           position: "top-right",
           autoClose: 3000,
         });

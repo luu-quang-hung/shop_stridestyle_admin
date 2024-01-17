@@ -702,7 +702,7 @@ const ProductComponent = () => {
                       </Form.Group>
                       <ImagePreviews imageURL={productCreate.imagePreview} />
                     </CCol>
-                    <CCol md={6}>
+                    {/* <CCol md={6}>
                       <Form.Group controlId="formImage">
                         <Form.Label>Chọn nhiều hình ảnh</Form.Label>
                         <Form.Control
@@ -714,7 +714,7 @@ const ProductComponent = () => {
                         {errors.listImages && <div className="error-message">{errors.listImages}</div>}
                       </Form.Group>
                       <ImagePreviewList imageURLs={listImages} />
-                    </CCol>
+                    </CCol> */}
                     <Form.Group controlId="formDescription">
                       <Form.Label >Mô tả</Form.Label>
                       <Form.Control
